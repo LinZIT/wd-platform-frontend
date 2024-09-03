@@ -1,9 +1,10 @@
 import { ChangeEvent, FC, useEffect, useState } from 'react';
+import ForumRoundedIcon from '@mui/icons-material/ForumRounded';
 import useEcho from './components/useEcho';
 import { setBearerToken } from './lib/axios';
 import { AppBar, Avatar, Badge, Box, Button, Card, CardActions, CardHeader, CssBaseline, Dialog, DialogActions, DialogContent, DialogTitle, Divider, Grid2, IconButton, TextField, Toolbar, Typography } from '@mui/material';
 import { blue } from '@mui/material/colors';
-import { Menu, MessageRounded, MoreVert } from '@mui/icons-material';
+import { CloseRounded, Menu, MessageRounded, MoreVert } from '@mui/icons-material';
 import { Howl } from 'howler'
 
 function App() {
@@ -12,11 +13,46 @@ function App() {
   const [error, setError] = useState<any>(null);
   const echo = useEcho();
   const [open, setOpen] = useState<boolean>(false);
+  const [openMessages, setOpenMessages] = useState<boolean>(false);
   const [text, setText] = useState<string>('');
   const [unreadMessages, setUnreadMessages] = useState(0)
+  const [readMessages, setReadMessages] = useState<any>(null);
   const sound = new Howl({
     src: ['/message.mp3'],
   })
+
+  useEffect(() => {
+    if (user) {
+      getAllUsers()
+      if (echo) {
+        echo.join(`chat.${user.id}`)
+          .here((users: any) => {
+            console.log(users)
+          })
+          .joining((user: any) => {
+            console.log(user.name);
+          })
+          .leaving((user: any) => {
+            console.log(user.name);
+          })
+          .error((error: any) => {
+            console.error(error);
+          });
+        echo.private(`chat.${user?.id}`).listen('MessageSent', (event: any) => {
+          if (event.receiver.id === user?.id)
+            console.log('Real-time event received: ', event)
+          handleEchoCallback()
+        })
+      }
+    }
+
+    return () => {
+      if (echo) {
+        echo.leave(`chat.${user.id}`);
+      }
+    };
+  }, [user]);
+
   const handleEchoCallback = () => {
     setUnreadMessages(prevUnread => prevUnread + 1)
     sound.play()
@@ -76,43 +112,18 @@ function App() {
       setError(error);
     }
   }
-  useEffect(() => {
-    if (user) {
-      getAllUsers()
-      if (echo) {
-        echo.join(`chat.${user.id}`)
-          .here((users: any) => {
-            console.log(users)
-          })
-          .joining((user: any) => {
-            console.log(user.name);
-          })
-          .leaving((user: any) => {
-            console.log(user.name);
-          })
-          .error((error: any) => {
-            console.error(error);
-          });
-        echo.private(`chat.${user?.id}`).listen('MessageSent', (event: any) => {
-          if (event.receiver.id === user?.id)
-            console.log('Real-time event received: ', event)
-          handleEchoCallback()
-        })
-      }
-    }
-
-    return () => {
-      if (echo) {
-        echo.leave(`chat.${user.id}`);
-      }
-    };
-  }, [user]);
 
   const handleClose = () => {
     setOpen(false);
   }
+  const handleCloseMessages = () => {
+    setOpenMessages(false);
+  }
   const openModal = () => {
     setOpen(true)
+  }
+  const openModalMessages = () => {
+    setOpenMessages(true)
   }
 
   const sendMessage = async (receiver_id: number) => {
@@ -136,6 +147,9 @@ function App() {
     } catch (error) {
       console.log({ error });
     }
+  }
+
+  const getChatWith = async (receiver_id: number) => {
   }
   return (
     <>
@@ -181,8 +195,8 @@ function App() {
               {usuarios.map((usuario: any) => (usuario.id !== user.id &&
                 (
                   <Box key={usuario.id}>
-                    <UserItem usuario={usuario} openModal={openModal} />
-                    <Dialog open={open} >
+                    <UserItem usuario={usuario} openModal={openModal} openModalMessages={openModalMessages} getChatWith={getChatWith} />
+                    <Dialog open={open}>
                       <DialogTitle>Redacta tu mensaje</DialogTitle>
                       <DialogContent sx={{ p: 5, mt: 2 }}>
                         <TextField multiline label="Mensaje" value={text} onChange={(e: ChangeEvent<HTMLInputElement>) => { setText(e.target.value) }} />
@@ -191,6 +205,26 @@ function App() {
                         <Button onClick={handleClose} color='error'>Cancelar</Button>
                         <Button onClick={() => sendMessage(usuario.id)}>Enviar</Button>
                       </DialogActions>
+                    </Dialog>
+                    <Dialog open={openMessages} fullScreen onClose={handleCloseMessages}>
+                      <AppBar position="static">
+                        <Toolbar>
+                          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+                            Chat Messages
+                          </Typography>
+                          <IconButton onClick={handleCloseMessages}>
+                            <CloseRounded />
+                          </IconButton>
+                        </Toolbar>
+                      </AppBar>
+                      <DialogContent>
+                        <Box sx={{ mt: 2 }}>
+                          <Typography variant='h4'>{`Chat con ${usuario.names} ${usuario.surnames}`}</Typography>
+                        </Box>
+                        <Box sx={{ mt: 2 }}>
+                          {/* <ChatMessages usuario={usuario} /> */}
+                        </Box>
+                      </DialogContent>
                     </Dialog>
                   </Box>
                 )
@@ -204,7 +238,7 @@ function App() {
   )
 }
 
-const UserItem: FC<{ usuario: any, openModal: () => void }> = ({ usuario, openModal }) => {
+const UserItem: FC<{ usuario: any, openModal: () => void, openModalMessages: () => void, getChatWith: (id: number) => void }> = ({ usuario, openModal, openModalMessages, getChatWith }) => {
   return (
     <Grid2>
       <Card elevation={0} sx={{ border: '1px solid rgba(0,0,0,0.1)', borderRadius: 5 }}>
@@ -226,6 +260,10 @@ const UserItem: FC<{ usuario: any, openModal: () => void }> = ({ usuario, openMo
           <IconButton aria-label="Send message">
             <MessageRounded onClick={openModal} />
           </IconButton>
+          <IconButton aria-label="Send message">
+            <ForumRoundedIcon onClick={openModalMessages} />
+          </IconButton>
+
         </CardActions>
       </Card>
     </Grid2>
