@@ -6,8 +6,26 @@ import { AppBar, Avatar, Badge, Box, Button, Card, CardActions, CardHeader, CssB
 import { blue } from '@mui/material/colors';
 import { CloseRounded, Menu, MessageRounded, MoreVert } from '@mui/icons-material';
 import { Howl } from 'howler'
-
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { Login } from './pages/auth/Login';
+import { Dashboard } from './pages/Dashboard';
+import { Theme, ThemeProvider } from '@emotion/react';
+import { useUserStore } from './store/user/UserStore';
+import { themeDark, themeLight } from './common/theme';
+const useGetTheme = () => {
+  const user = useUserStore((state) => state.user);
+  const [theme, setTheme] = useState<Theme>(themeLight)
+  useEffect(() => {
+    if (user?.theme === 'dark') {
+      setTheme(themeDark);
+    } else {
+      setTheme(themeLight);
+    }
+  }, [user?.theme])
+  return theme
+}
 function App() {
+  const theme = useGetTheme();
   const [user, setUser] = useState<any>(null);
   const [usuarios, setUsuarios] = useState<any>(null);
   const [error, setError] = useState<any>(null);
@@ -152,30 +170,17 @@ function App() {
   const getChatWith = async (receiver_id: number) => {
   }
   return (
-    <>
+    <ThemeProvider theme={theme}>
       <CssBaseline />
-      <AppBar position="static">
-        <Toolbar>
-          <IconButton
-            size="large"
-            edge="start"
-            color="inherit"
-            aria-label="menu"
-            sx={{ mr: 2 }}
-          >
-            <Menu />
-          </IconButton>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            WD
-          </Typography>
-          <Badge badgeContent={unreadMessages} color="error">
-            <MessageRounded />
-          </Badge>
-        </Toolbar>
-      </AppBar>
-      <Box sx={{ p: 2 }}>
+      <BrowserRouter>
+        <Routes>
+          <Route path='/' element={<Login />} />
+          <Route path='/dashboard' element={<Dashboard />} />
+        </Routes>
+      </BrowserRouter>
+      {/* <Box sx={{ p: 2 }}>
         <Box>
-          {/* {user.token} */}
+          {user.token}
           {!user && (<>
             <Typography>Por favor inicia sesion</Typography>
             <Box sx={{ mt: 2 }}>
@@ -222,7 +227,7 @@ function App() {
                           <Typography variant='h4'>{`Chat con ${usuario.names} ${usuario.surnames}`}</Typography>
                         </Box>
                         <Box sx={{ mt: 2 }}>
-                          {/* <ChatMessages usuario={usuario} /> */}
+                          <ChatMessages usuario={usuario} />
                         </Box>
                       </DialogContent>
                     </Dialog>
@@ -233,8 +238,8 @@ function App() {
           )}
 
         </Box>
-      </Box>
-    </>
+      </Box> */}
+    </ThemeProvider>
   )
 }
 
@@ -267,6 +272,7 @@ const UserItem: FC<{ usuario: any, openModal: () => void, openModalMessages: () 
         </CardActions>
       </Card>
     </Grid2>
+
   )
 }
 
