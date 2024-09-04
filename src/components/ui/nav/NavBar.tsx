@@ -2,7 +2,7 @@ import { AppBar, Toolbar, Box, Typography, darken, useTheme, Grid2, Badge } from
 import { SideBar } from ".";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { MessageRounded } from "@mui/icons-material";
+import { MessageRounded, NotificationsRounded } from "@mui/icons-material";
 import { useUserStore } from "../../../store/user/UserStore";
 import useEcho from "../../useEcho";
 
@@ -67,7 +67,7 @@ export const NavBar = () => {
                     {/* <UserMenu /> */}
                     <Grid2 size={1}>
                         <Badge badgeContent={unreadMessages} color="error">
-                            <MessageRounded />
+                            <NotificationsRounded />
                         </Badge>
                     </Grid2>
                 </Grid2>
