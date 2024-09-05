@@ -1,5 +1,5 @@
 import React, { useContext, useState } from 'react'
-import { Avatar, Box, Divider, IconButton, Menu, MenuItem, darken, useTheme } from '@mui/material';
+import { Avatar, Box, Divider, IconButton, Menu, MenuItem, Typography, darken, lighten, useTheme } from '@mui/material';
 
 import { useNavigate } from 'react-router-dom';
 import ExitToApp from '@mui/icons-material/ExitToAppRounded';
@@ -9,6 +9,7 @@ import { useUserStore } from '../../../store/user/UserStore';
 
 export const UserMenu = () => {
     const userLogout = useUserStore((state) => state.logout);
+    const user = useUserStore((state) => state.user);
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const open = Boolean(anchorEl);
     const router = useNavigate();
@@ -33,8 +34,8 @@ export const UserMenu = () => {
         <Box>
             <IconButton onClick={handleClick}>
                 <Avatar alt='User Avatar' sx={{
-                    width: 40, height: 40, bgcolor: '#C0EA0F'
-                }}>{authState.logged ? authState.names.substring(0, 1) + authState.surnames.substring(0, 1) : 'USR'}</Avatar>
+                    width: 40, height: 40, bgcolor: user.color, color: theme.palette.getContrastText(user.color)
+                }}>{user.names.substring(0, 1) + user.surnames.substring(0, 1)}</Avatar>
             </IconButton>
             <Menu open={open} anchorEl={anchorEl} onClose={handleClose} onClick={handleClose}
                 PaperProps={styles.paperProps}
@@ -42,17 +43,17 @@ export const UserMenu = () => {
                 anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
             >
                 <MenuItem onClick={() => redirect('/profile')} sx={{ textAlign: 'center' }}>
-                    <SettingsRounded sx={{ color: theme.palette.mode === 'dark' ? authState.lighten : authState.darken }} />
-                    <TypographyCustom variant='subtitle1' sx={{ color: theme.palette.mode === 'dark' ? authState.lighten : authState.darken, textAlign: 'center' }}>
+                    <SettingsRounded sx={{ color: theme.palette.mode === 'dark' ? lighten(user.color, 0.6) : darken(user.color, 0.6) }} />
+                    <Typography variant='subtitle1' sx={{ color: theme.palette.mode === 'dark' ? lighten(user.color, 0.6) : darken(user.color, 0.6), textAlign: 'center' }}>
                         Mi perfil
-                    </TypographyCustom>
+                    </Typography>
                 </MenuItem>
                 <Divider />
                 <MenuItem onClick={() => logout()}>
                     <ExitToApp color="error" />
-                    <TypographyCustom variant='subtitle1' color="error">
+                    <Typography variant='subtitle1' color="error">
                         Cerrar sesion
-                    </TypographyCustom>
+                    </Typography>
                 </MenuItem>
             </Menu>
         </Box>

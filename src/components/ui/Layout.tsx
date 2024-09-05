@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import { Box, Toolbar } from '@mui/material';
+import { Box, Container, Toolbar } from '@mui/material';
 // import { Footer } from './footer';
 import { NavBar } from './nav';
 type Props = {
@@ -10,7 +10,7 @@ type Props = {
 export const Layout: FC<Props> = ({ children, noMargin = false }) => {
     const styles = {
         body: {
-            width: { xs: '100%', sm: '90%', md: '90%' },
+            width: '100%',
             margin: 'auto',
             minHeight: '100vh',
             maxheight: '100%',
@@ -19,11 +19,11 @@ export const Layout: FC<Props> = ({ children, noMargin = false }) => {
     return (
         <Box>
             <NavBar />
-            <Box sx={styles.body}>
-                <Toolbar />
+            <Toolbar />
+            <Container sx={styles.body}>
                 {children}
-            </Box>
+            </Container>
             {/* <Footer /> */}
-        </Box>
+        </Box >
     )
 }

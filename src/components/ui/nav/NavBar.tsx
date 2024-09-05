@@ -1,11 +1,13 @@
-import { AppBar, Toolbar, Box, Typography, darken, useTheme, Grid2, Badge } from "@mui/material";
-import { SideBar } from ".";
+import { AppBar, Toolbar, Box, useTheme, Badge, Container, IconButton } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { MessageRounded, NotificationsRounded } from "@mui/icons-material";
+import { useEffect } from "react";
+import { NotificationsRounded } from "@mui/icons-material";
 import { useUserStore } from "../../../store/user/UserStore";
 import useEcho from "../../useEcho";
+import { Howl } from "howler";
 import { useMessagesStore } from "../../../store/messages/MessagesStore";
+import { UserMenu } from "./UserMenu";
 
 export const NavBar = () => {
     const theme = useTheme();
@@ -15,66 +17,74 @@ export const NavBar = () => {
     const unreadMessages = useMessagesStore((state) => state.unreadMessages);
     const setUnreadMessages = useMessagesStore((state) => state.setUnreadMessages);
     const getMessages = useMessagesStore((state) => state.getMessages);
+    const getChatWindow = useUserStore((state) => state.getChatWindow)
     useEffect(() => {
         if (user) {
             if (echo) {
-                echo.join(`chat.${user.id}`)
-                    .here((users: any) => {
-                        console.log(users)
-                    })
-                    .joining((user: any) => {
-                        console.log(user.name);
-                    })
-                    .leaving((user: any) => {
-                        console.log(user.name);
-                    })
-                    .error((error: any) => {
-                        console.error(error);
-                    });
                 echo.private(`chat.${user?.id}`).listen('MessageSent', (event: any) => {
                     if (event.receiver.id === user?.id)
-                        console.log('Real-time event received: ', event)
-                    handleEchoCallback(event)
-
+                        handleEchoCallback(event)
                 })
+                if (user.department?.description === 'IT') {
+                    console.log('intento')
+                    echo.join(`room.${user.department?.id}`)
+                        .here((users: any) => {
+                            console.log('Users in IT room:', users);
+                        })
+                        .joining((user: any) => {
+                            console.log('User joined IT room:', user);
+                        })
+                }
             }
         }
         return () => {
             if (echo) {
                 echo.leave(`chat.${user.id}`);
+                echo.leave(`room.${user.department?.id}`);
             }
         };
     }, [user.token]);
     const sound = new Howl({
         src: ['/message.mp3'],
     })
-    console.log({ unreadMessages })
+    const sound_open = new Howl({
+        src: ['/new_message.mp3'],
+    })
     const handleEchoCallback = (e: any) => {
-        sound.play()
+        getChatWindow() ? sound_open.play() : sound.play();
+        if (getChatWindow()) return;
         const value = getMessages();
         const newUnreadMessages = [...value, { message: e.message, sender: e.sender, date: new Date() }]
         setUnreadMessages(newUnreadMessages);
     }
-
+    const height = 35;
+    const width = 160;
     return (
-        <AppBar elevation={0}>
+        <AppBar elevation={0} color="info" sx={{ borderBottom: '1px solid rgba(0,0,0,0.1)' }}>
             <Toolbar>
-                <Grid2 container direction='row' justifyContent='space-between' alignItems='center' sx={{ width: '100%', margin: 'auto' }}>
-                    <Grid2 size={8}>
-
-                        <Box sx={{ display: 'flex', alignItems: 'center', flexFlow: 'row nowrap' }}>
-                            <SideBar />
-                            {/* <img src='/logo.png' width={45} height={45} style={{ cursor: 'pointer' }} onClick={() => router('/dashboard')} /> */}
-                            <Typography sx={{ ml: 1, cursor: 'pointer' }} onClick={() => router('/dashboard')}>Well Done</Typography>
-                        </Box>
-                    </Grid2>
-                    {/* <UserMenu /> */}
-                    <Grid2 size={1}>
-                        <Badge badgeContent={unreadMessages.length} color="error">
-                            <NotificationsRounded />
-                        </Badge>
-                    </Grid2>
-                </Grid2>
+                <Container>
+                    <Grid container direction='row' justifyContent='space-between' alignItems='center'>
+                        <Grid size={8}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', flexFlow: 'row nowrap' }}>
+                                {theme.palette.mode === 'dark'
+                                    ? (
+                                        <img src='/logo_blanco.webp' width={width} height={height} style={{ cursor: 'pointer' }} onClick={() => router('/dashboard')} />
+                                    )
+                                    : (
+                                        <img src='/logo_azul.webp' width={width} height={height} style={{ cursor: 'pointer' }} onClick={() => router('/dashboard')} />
+                                    )}
+                            </Box>
+                        </Grid>
+                        <Grid size={4} sx={{ display: 'flex', justifyContent: 'end' }}>
+                            <Badge badgeContent={unreadMessages.length} color="error" >
+                                <IconButton onClick={() => setUnreadMessages([])} sx={{ cursor: 'pointer' }}>
+                                    <NotificationsRounded />
+                                </IconButton>
+                            </Badge>
+                            <UserMenu />
+                        </Grid>
+                    </Grid>
+                </Container>
             </Toolbar>
         </AppBar>
     )

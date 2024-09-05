@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { create } from 'zustand';
 import { createCookie, deleteCookie, getCookieValue } from '../../lib/functions';
 import { setBearerToken } from '../../lib/axios';
@@ -21,15 +20,25 @@ export interface IUser {
     role?: IRole;
     department?: IDepartment;
     status?: IStatus;
+    chatWindowOpen: boolean,
 }
 export interface IRole {
-
+    id: number;
+    description: string;
+    created_at: string;
+    updated_at: string;
 }
 export interface IDepartment {
-
+    id: number;
+    description: string;
+    created_at: string;
+    updated_at: string;
 }
 export interface IStatus {
-
+    id: number;
+    description: string;
+    created_at: string;
+    updated_at: string;
 }
 const initialState: IUser = {
     id: 0,
@@ -46,6 +55,7 @@ const initialState: IUser = {
     level: 0,
     color: '#C0EA0F',
     theme: 'light',
+    chatWindowOpen: false,
 }
 
 interface Response {
@@ -56,10 +66,16 @@ interface State {
     user: IUser;
     login: (email: string, password: string) => Promise<Response>;
     logout: () => boolean;
+    setChatWindow: (value: boolean) => void;
+    getChatWindow: () => boolean;
     validateToken: () => Promise<Response>;
 }
-export const useUserStore = create<State>((set) => ({
+export const useUserStore = create<State>((set, get) => ({
     user: initialState,
+    setChatWindow: (value: boolean) => {
+        set({ user: { ...get().user, chatWindowOpen: value } })
+    },
+    getChatWindow: () => get().user.chatWindowOpen,
     login: async (email: string, password: string) => {
         const url = `${import.meta.env.VITE_BACKEND_URL}/api/login`
         const options = {
@@ -121,7 +137,7 @@ export const useUserStore = create<State>((set) => ({
             switch (response.status) {
                 case 200:
                     const { user }: { user: IUser } = await response.json();
-                    console.log('SE COLOCA EL TOKEN EN LA VALIDACION DEL MISMO', user.token)
+                    // console.log('SE COLOCA EL TOKEN EN LA VALIDACION DEL MISMO', user.token)
                     setBearerToken(user.token ?? '')
                     set({ user })
                     return { status: true, message: 'Token validado' }

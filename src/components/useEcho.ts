@@ -17,7 +17,7 @@ const useEcho = () => {
                 authorizer: (channel: any) => {
                     return {
                         authorize: (socketId: any, callback: any) => {
-                            console.log({ socketId })
+                            // console.log({ socketId })
                             axios
                                 .post('/api/broadcasting/auth', {
                                     socket_id: socketId,

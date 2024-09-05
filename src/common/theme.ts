@@ -4,8 +4,11 @@ export const themeLight = createTheme({
     palette: {
         mode: 'light',
         background: {
-            default: '#F0F0F0'
+            default: '#F7F7F7',
         },
+        // background: {
+        //     default: '#191919'
+        // },
         primary: {
             main: '#394775',
         },
@@ -13,7 +16,7 @@ export const themeLight = createTheme({
             main: '#84967f',
         },
         info: {
-            main: '#6b989e',
+            main: '#FFF',
         }
     },
     typography: {

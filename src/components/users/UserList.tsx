@@ -10,7 +10,7 @@ interface Props {
 export const UserList: FC<Props> = ({ usuarios }) => {
     const user = useUserStore((state) => state.user)
     return (
-        <Grid2 container>
+        <Grid2 container spacing={2}>
             {usuarios.map((usuario: any) => (usuario.id !== user.id && (<UserItem key={usuario.id} usuario={usuario} />)))}
         </Grid2>
     )
