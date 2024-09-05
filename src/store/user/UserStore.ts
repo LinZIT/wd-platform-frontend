@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { create } from 'zustand';
 import { createCookie, deleteCookie, getCookieValue } from '../../lib/functions';
+import { setBearerToken } from '../../lib/axios';
 export interface IUser {
     id: number;
     names: string;
@@ -78,6 +79,8 @@ export const useUserStore = create<State>((set) => ({
                 case 200:
                     const { user, message }: { user: IUser, message: string } = await response.json();
                     createCookie('token', user.token ?? '')
+                    console.log("SE COLOCA EL BEARER TOKEN", user.token)
+                    setBearerToken(user.token ?? '')
                     set({ user })
                     return { status: true, message }
                 case 401:
@@ -105,7 +108,7 @@ export const useUserStore = create<State>((set) => ({
 
         if (!token) return { status: false, message: 'No hay token' }
 
-        const url = `${import.meta.env.VITE_PUBLIC_BACKEND_URL}/user/data`;
+        const url = `${import.meta.env.VITE_BACKEND_URL}/api/user/data`;
         const options = {
             method: 'GET',
             headers: {
@@ -118,6 +121,9 @@ export const useUserStore = create<State>((set) => ({
             switch (response.status) {
                 case 200:
                     const { user }: { user: IUser } = await response.json();
+                    console.log('SE COLOCA EL TOKEN EN LA VALIDACION DEL MISMO', user.token)
+                    setBearerToken(user.token ?? '')
+                    set({ user })
                     return { status: true, message: 'Token validado' }
                 case 401:
                     return { status: false, message: 'Token invalido' }

@@ -39,136 +39,136 @@ function App() {
     src: ['/message.mp3'],
   })
 
-  useEffect(() => {
-    if (user) {
-      getAllUsers()
-      if (echo) {
-        echo.join(`chat.${user.id}`)
-          .here((users: any) => {
-            console.log(users)
-          })
-          .joining((user: any) => {
-            console.log(user.name);
-          })
-          .leaving((user: any) => {
-            console.log(user.name);
-          })
-          .error((error: any) => {
-            console.error(error);
-          });
-        echo.private(`chat.${user?.id}`).listen('MessageSent', (event: any) => {
-          if (event.receiver.id === user?.id)
-            console.log('Real-time event received: ', event)
-          handleEchoCallback()
-        })
-      }
-    }
+  // useEffect(() => {
+  //   if (user) {
+  //     getAllUsers()
+  //     if (echo) {
+  //       echo.join(`chat.${user.id}`)
+  //         .here((users: any) => {
+  //           console.log(users)
+  //         })
+  //         .joining((user: any) => {
+  //           console.log(user.name);
+  //         })
+  //         .leaving((user: any) => {
+  //           console.log(user.name);
+  //         })
+  //         .error((error: any) => {
+  //           console.error(error);
+  //         });
+  //       echo.private(`chat.${user?.id}`).listen('MessageSent', (event: any) => {
+  //         if (event.receiver.id === user?.id)
+  //           console.log('Real-time event received: ', event)
+  //         handleEchoCallback()
+  //       })
+  //     }
+  //   }
 
-    return () => {
-      if (echo) {
-        echo.leave(`chat.${user.id}`);
-      }
-    };
-  }, [user]);
+  //   return () => {
+  //     if (echo) {
+  //       echo.leave(`chat.${user.id}`);
+  //     }
+  //   };
+  // }, [user]);
 
-  const handleEchoCallback = () => {
-    setUnreadMessages(prevUnread => prevUnread + 1)
-    sound.play()
-  }
-  const getAllUsers = async () => {
+  // const handleEchoCallback = () => {
+  //   setUnreadMessages(prevUnread => prevUnread + 1)
+  //   sound.play()
+  // }
+  // const getAllUsers = async () => {
 
-    if (!user) {
-      return;
-    }
-    const url = 'http://localhost:8000/api/get_users';
-    const options = {
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${user?.token}`,
-      },
-    }
-    try {
-      const response = await fetch(url, options);
-      const { data } = await response.json();
-      console.log({ data })
-      setUsuarios(data);
-    } catch (error) {
-      console.log(error);
-      setError(error);
-    }
-  }
+  //   if (!user) {
+  //     return;
+  //   }
+  //   const url = 'http://localhost:8000/api/get_users';
+  //   const options = {
+  //     method: 'GET',
+  //     headers: {
+  //       Authorization: `Bearer ${user?.token}`,
+  //     },
+  //   }
+  //   try {
+  //     const response = await fetch(url, options);
+  //     const { data } = await response.json();
+  //     console.log({ data })
+  //     setUsuarios(data);
+  //   } catch (error) {
+  //     console.log(error);
+  //     setError(error);
+  //   }
+  // }
 
-  const login = async (id?: number) => {
-    const url = 'http://localhost:8000/api/login';
-    const body = new URLSearchParams();
-    switch (id) {
-      case 1:
-        body.append('email', 'linz.webdev@gmail.com');
-        break;
-      case 2:
-        body.append('email', 'linz.webdev2@gmail.com');
-        break;
-      default:
-        body.append('email', 'nefjbet@gmail.com');
-        break;
-    }
-    body.append('password', 'v24548539*');
-    const options = {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body
-    }
-    try {
-      const response = await fetch(url, options);
-      const { user } = await response.json();
-      setUser(user);
-      setBearerToken(user.token);
-    } catch (error) {
-      console.log(error);
-      setError(error);
-    }
-  }
+  // const login = async (id?: number) => {
+  //   const url = 'http://localhost:8000/api/login';
+  //   const body = new URLSearchParams();
+  //   switch (id) {
+  //     case 1:
+  //       body.append('email', 'linz.webdev@gmail.com');
+  //       break;
+  //     case 2:
+  //       body.append('email', 'linz.webdev2@gmail.com');
+  //       break;
+  //     default:
+  //       body.append('email', 'nefjbet@gmail.com');
+  //       break;
+  //   }
+  //   body.append('password', 'v24548539*');
+  //   const options = {
+  //     method: 'POST',
+  //     headers: {
+  //       'Content-Type': 'application/x-www-form-urlencoded',
+  //     },
+  //     body
+  //   }
+  //   try {
+  //     const response = await fetch(url, options);
+  //     const { user } = await response.json();
+  //     setUser(user);
+  //     setBearerToken(user.token);
+  //   } catch (error) {
+  //     console.log(error);
+  //     setError(error);
+  //   }
+  // }
 
-  const handleClose = () => {
-    setOpen(false);
-  }
-  const handleCloseMessages = () => {
-    setOpenMessages(false);
-  }
-  const openModal = () => {
-    setOpen(true)
-  }
-  const openModalMessages = () => {
-    setOpenMessages(true)
-  }
+  // const handleClose = () => {
+  //   setOpen(false);
+  // }
+  // const handleCloseMessages = () => {
+  //   setOpenMessages(false);
+  // }
+  // const openModal = () => {
+  //   setOpen(true)
+  // }
+  // const openModalMessages = () => {
+  //   setOpenMessages(true)
+  // }
 
-  const sendMessage = async (receiver_id: number) => {
-    const url = "http://localhost:8000/api/send-message"
-    const body = new URLSearchParams()
-    body.append('message', String(text))
-    body.append('user_id', String(receiver_id))
-    body.append('from', String(user.id))
-    const options = {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Authorization': `Bearer ${user?.token}`,
-      },
-      body
-    }
-    try {
-      const response = await fetch(url, options);
-      const data = await response.json();
-      console.log({ data })
-    } catch (error) {
-      console.log({ error });
-    }
-  }
+  // const sendMessage = async (receiver_id: number) => {
+  //   const url = "http://localhost:8000/api/send-message"
+  //   const body = new URLSearchParams()
+  //   body.append('message', String(text))
+  //   body.append('user_id', String(receiver_id))
+  //   body.append('from', String(user.id))
+  //   const options = {
+  //     method: 'POST',
+  //     headers: {
+  //       'Content-Type': 'application/x-www-form-urlencoded',
+  //       'Authorization': `Bearer ${user?.token}`,
+  //     },
+  //     body
+  //   }
+  //   try {
+  //     const response = await fetch(url, options);
+  //     const data = await response.json();
+  //     console.log({ data })
+  //   } catch (error) {
+  //     console.log({ error });
+  //   }
+  // }
 
-  const getChatWith = async (receiver_id: number) => {
-  }
+  // const getChatWith = async (receiver_id: number) => {
+  // }
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
