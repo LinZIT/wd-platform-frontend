@@ -21,6 +21,7 @@ export interface IUser {
     department?: IDepartment;
     status?: IStatus;
     chatWindowOpen: boolean,
+    isOnline?: number;
 }
 export interface IRole {
     id: number;
@@ -56,6 +57,7 @@ const initialState: IUser = {
     color: '#C0EA0F',
     theme: 'light',
     chatWindowOpen: false,
+    isOnline: 0,
 }
 
 interface Response {
@@ -65,7 +67,7 @@ interface Response {
 interface State {
     user: IUser;
     login: (email: string, password: string) => Promise<Response>;
-    logout: () => boolean;
+    logout: () => Promise<boolean>;
     setChatWindow: (value: boolean) => void;
     getChatWindow: () => boolean;
     validateToken: () => Promise<Response>;
@@ -110,12 +112,24 @@ export const useUserStore = create<State>((set, get) => ({
             return { status: true, message: 'No se logro conectar con el servidor' }
         }
     },
-    logout: () => {
+    logout: async () => {
+        const url = `${import.meta.env.VITE_BACKEND_URL}/api/logout`
+        const options = {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Authorization': `Bearer ${get().user.token}`,
+            },
+        }
         try {
+            const response = await fetch(url, options)
+            console.log({ response });
             deleteCookie('token');
             set({ user: initialState });
             return true;
         } catch (error) {
+            console.log({ error });
             return false;
         }
     },

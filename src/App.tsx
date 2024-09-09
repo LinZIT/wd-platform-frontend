@@ -11,9 +11,9 @@ const useGetTheme = () => {
   const [theme, setTheme] = useState<Theme>(themeLight)
   useEffect(() => {
     if (user?.theme === 'dark') {
-      setTheme(themeDark);
-    } else {
       setTheme(themeLight);
+    } else {
+      setTheme(themeDark);
     }
   }, [user?.theme])
   return theme

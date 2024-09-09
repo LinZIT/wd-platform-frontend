@@ -47,7 +47,7 @@ export const ChatWindow: FC<Props> = ({ usuario }) => {
                 echo.leave(`chat.${user.id}`);
             }
         };
-    }, [open])
+    }, [open, usuario])
     const handleOpen = () => {
         setOpen(true);
         setChatWindow(true);

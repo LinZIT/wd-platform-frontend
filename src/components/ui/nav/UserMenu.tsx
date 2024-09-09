@@ -23,9 +23,8 @@ export const UserMenu = () => {
         router(path)
     }
 
-
     const logout = async () => {
-        const result = userLogout();
+        const result = await userLogout();
         console.log({ result })
         if (result) return window.location.href = '/';
     }

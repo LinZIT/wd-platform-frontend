@@ -19,8 +19,8 @@ export const Login = () => {
         const result = await login(values.email, values.password);
         if (result.status) {
             resetForm()
-            // window.location.href = '/dashboard'
-            router('/dashboard')
+            window.location.href = '/dashboard'
+            // router('/dashboard')
         } else {
             alert('Error al iniciar sesión')
         }
