@@ -1,18 +1,16 @@
-import { FC, useEffect } from 'react';
-import { Box, Container, Fab, Toolbar } from '@mui/material';
+import { FC } from 'react';
+import { Box, Container, Toolbar } from '@mui/material';
 // import { Footer } from './footer';
 import { NavBar } from './nav';
-import { ForumRounded } from '@mui/icons-material';
 import { Chat } from '../chat';
-import { useUserStore } from '../../store/user/UserStore';
+import { Bounce, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 type Props = {
     children: React.ReactNode;
     noMargin?: boolean;
     chat?: boolean;
 }
-
-export const Layout: FC<Props> = ({ children, noMargin = false, chat = true }) => {
-    const logout = useUserStore((state) => state.logout);
+export const Layout: FC<Props> = ({ children, chat = true }) => {
     const styles = {
         body: {
             width: '100%',
@@ -21,15 +19,7 @@ export const Layout: FC<Props> = ({ children, noMargin = false, chat = true }) =
             maxheight: '100%',
         }
     }
-    // useEffect(() => {
-    //     window.addEventListener("beforeunload", (ev: any) => {
 
-    //         ev.preventDefault();
-    //         logout();
-    //         return ev.returnValue = 'Are you sure you want to close?';
-    //     });
-
-    // }, [])
     return (
         <Box>
             <NavBar />
@@ -41,6 +31,20 @@ export const Layout: FC<Props> = ({ children, noMargin = false, chat = true }) =
                 <Chat />
             )}
             {/* <Footer /> */}
+            <ToastContainer
+                stacked
+                position="top-right"
+                autoClose={5000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme="light"
+                transition={Bounce}
+            />
         </Box >
     )
 }

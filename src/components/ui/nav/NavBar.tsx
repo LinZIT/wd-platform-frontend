@@ -2,7 +2,7 @@ import { AppBar, Toolbar, Box, useTheme, Badge, Container, IconButton } from "@m
 import Grid from "@mui/material/Grid2";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
-import { NotificationsRounded } from "@mui/icons-material";
+import { NotificationsOutlined, NotificationsRounded } from "@mui/icons-material";
 import { useUserStore } from "../../../store/user/UserStore";
 import useEcho from "../../useEcho";
 import { Howl } from "howler";
@@ -75,13 +75,17 @@ export const NavBar = () => {
                                     )}
                             </Box>
                         </Grid>
-                        <Grid size={4} sx={{ display: 'flex', justifyContent: 'end' }}>
-                            <Badge badgeContent={unreadMessages.length} color="error" >
-                                <IconButton onClick={() => setUnreadMessages([])} sx={{ cursor: 'pointer' }}>
-                                    <NotificationsRounded />
-                                </IconButton>
-                            </Badge>
-                            <UserMenu />
+                        <Grid size={4} >
+                            <Box sx={{ display: 'flex', justifyContent: 'end' }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                    <IconButton onClick={() => setUnreadMessages([])} sx={{ cursor: 'pointer', background: theme.palette.background.default }}>
+                                        <Badge badgeContent={unreadMessages.length === 0} variant="dot" color="error" >
+                                            <NotificationsOutlined />
+                                        </Badge>
+                                    </IconButton>
+                                </Box>
+                                <UserMenu />
+                            </Box>
                         </Grid>
                     </Grid>
                 </Container>

@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { createCookie, deleteCookie, getCookieValue } from '../../lib/functions';
 import { setBearerToken } from '../../lib/axios';
+import { darken, lighten } from '@mui/material';
 export interface IUser {
     id: number;
     names: string;
@@ -22,6 +23,8 @@ export interface IUser {
     status?: IStatus;
     chatWindowOpen: boolean,
     isOnline?: number;
+    lighten: string;
+    darken: string;
 }
 export interface IRole {
     id: number;
@@ -54,10 +57,12 @@ const initialState: IUser = {
     created_at: '',
     logged: false,
     level: 0,
-    color: '#C0EA0F',
+    color: '#394775',
     theme: 'light',
     chatWindowOpen: false,
     isOnline: 0,
+    darken: darken('#394775', 0.3),
+    lighten: lighten('#394775', 0.3),
 }
 
 interface Response {
@@ -71,6 +76,8 @@ interface State {
     setChatWindow: (value: boolean) => void;
     getChatWindow: () => boolean;
     validateToken: () => Promise<Response>;
+    changeTheme: (theme: string) => Promise<Response>;
+    changeColor: (color: string) => Promise<Response>;
 }
 export const useUserStore = create<State>((set, get) => ({
     user: initialState,
@@ -83,7 +90,7 @@ export const useUserStore = create<State>((set, get) => ({
         const options = {
             method: 'POST',
             headers: {
-                'Accept': 'application/json',
+                // 'Accept': 'application/json',
                 'Content-Type': 'application/x-www-form-urlencoded',
             },
             body: new URLSearchParams({
@@ -99,6 +106,10 @@ export const useUserStore = create<State>((set, get) => ({
                     createCookie('token', user.token ?? '')
                     console.log("SE COLOCA EL BEARER TOKEN", user.token)
                     setBearerToken(user.token ?? '')
+                    user.logged = true;
+                    user.isOnline = 1;
+                    user.lighten = lighten(user.color, 0.3);
+                    user.darken = darken(user.color, 0.3);
                     set({ user })
                     return { status: true, message }
                 case 401:
@@ -153,6 +164,10 @@ export const useUserStore = create<State>((set, get) => ({
                     const { user }: { user: IUser } = await response.json();
                     // console.log('SE COLOCA EL TOKEN EN LA VALIDACION DEL MISMO', user.token)
                     setBearerToken(user.token ?? '')
+                    user.logged = true;
+                    user.isOnline = 1;
+                    user.lighten = lighten(user.color, 0.3);
+                    user.darken = darken(user.color, 0.3);
                     set({ user })
                     return { status: true, message: 'Token validado' }
                 case 401:
@@ -163,6 +178,66 @@ export const useUserStore = create<State>((set, get) => ({
         } catch (error) {
             return { status: false, message: 'Token invalido' }
         }
-    }
+    },
+    changeTheme: async (theme: string) => {
+        set({ user: { ...get().user, theme } })
+        const url = `${import.meta.env.VITE_BACKEND_API_URL}/user/edit/${get().user.id}/theme`
+        const body = new URLSearchParams({
+            'theme': theme,
+        });
+        const options = {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Authorization': `Bearer ${get().user.token}`,
+            },
+            body
+        }
+        try {
+            const response = await fetch(url, options);
+            switch (response.status) {
+                case 200:
+                    const { message, status } = await response.json();
+                    console.log({ message, status });
+                    return { status, message }
+                default:
+                    return { status: false, message: "Ocurrio un error inesperado" }
+            }
+        } catch (error) {
+            console.log(error)
+            return { status: false, message: "No se logro conectar con el servidor" }
+        }
+    },
+    changeColor: async (color: string) => {
+        set({ user: { ...get().user, color, lighten: lighten(color, 0.3), darken: darken(color, 0.3), } })
+        const url = `${import.meta.env.VITE_BACKEND_API_URL}/user/edit/${get().user.id}/color`
+        const body = new URLSearchParams({
+            'color': color,
+        });
+        const options = {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Authorization': `Bearer ${get().user.token}`,
+            },
+            body
+        }
+        try {
+            const response = await fetch(url, options);
+            switch (response.status) {
+                case 200:
+                    const { message, status } = await response.json();
+                    console.log({ message, status });
+                    return { status, message }
+                default:
+                    return { status: false, message: "Ocurrio un error inesperado" }
+            }
+        } catch (error) {
+            console.log(error)
+            return { status: false, message: "No se logro conectar con el servidor" }
+        }
+    },
 
 }));

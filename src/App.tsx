@@ -6,14 +6,15 @@ import { Dashboard } from './pages/Dashboard';
 import { Theme, ThemeProvider } from '@emotion/react';
 import { useUserStore } from './store/user/UserStore';
 import { themeDark, themeLight } from './common/theme';
+import { Profile } from './pages/profile/Profile';
 const useGetTheme = () => {
   const user = useUserStore((state) => state.user);
   const [theme, setTheme] = useState<Theme>(themeLight)
   useEffect(() => {
     if (user?.theme === 'dark') {
-      setTheme(themeLight);
-    } else {
       setTheme(themeDark);
+    } else {
+      setTheme(themeLight);
     }
   }, [user?.theme])
   return theme
@@ -27,6 +28,7 @@ function App() {
         <Routes>
           <Route path='/' element={<Login />} />
           <Route path='/dashboard' element={<Dashboard />} />
+          <Route path='/profile' element={<Profile />} />
         </Routes>
       </BrowserRouter>
     </ThemeProvider>
