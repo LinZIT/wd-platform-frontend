@@ -4,6 +4,7 @@ import { AvatarCustom } from '../../custom/AvatarCustom'
 import { ColorPicker } from '../ColorPicker'
 import { ThemeChanger } from '../ThemeChanger'
 import { useUserStore } from '../../../store/user/UserStore'
+import { usePassStore } from '../../../store/password/PasswordStore'
 
 export const PCInfo = () => {
     const user = useUserStore((state) => state.user);
@@ -20,8 +21,8 @@ export const PCInfo = () => {
                 </Box>
                 <Box sx={{ display: 'flex', flexFlow: 'row wrap', justifyContent: 'space-between', alignItems: "center" }}>
                     <Box sx={{ display: 'flex', flexFlow: 'row nowrap', alignItems: 'center', gap: 1 }}>
-                        <ButtonCustom variant={'outlined'} style={{ height: 40 }}>
-                            Cambiar contraseña
+                        <ButtonCustom variant={'outlined'} style={{ height: 40 }} onClick={() => usePassStore.getState().setIsChanging(!usePassStore.getState().pass.changing)}>
+                            {`${usePassStore.getState().pass.changing ? 'Cerrar' : 'Cambiar contraseña'}`}
                         </ButtonCustom>
                         <ColorPicker />
                         <ThemeChanger />

@@ -43,7 +43,8 @@ export const DescripcionDeVista: FC<Props> = ({ description, title, backPath = u
         container: {
             display: 'flex',
             alignItems: 'center',
-            flexFlow: 'row nowrap'
+            flexFlow: 'row nowrap',
+            gap: 1
         }
     }
     const redirect = () => {

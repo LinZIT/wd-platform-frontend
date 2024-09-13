@@ -6,6 +6,7 @@ import { ColorPicker } from '../ColorPicker'
 import { ThemeChanger } from '../ThemeChanger'
 import { useUserStore } from '../../../store/user/UserStore'
 import { useState } from 'react'
+import { usePassStore } from '../../../store/password/PasswordStore'
 
 export const MobileInfo = () => {
     const user = useUserStore((state) => state.user);
@@ -37,7 +38,7 @@ export const MobileInfo = () => {
                     anchorEl={open ? anchorEl : null}
                     id="more"
                 >
-                    <MenuItem onClick={() => { }}>Cambiar contraseña</MenuItem>
+                    <MenuItem onClick={() => { usePassStore.getState().setIsChanging(!usePassStore.getState().pass.changing) }}>{`${usePassStore.getState().pass.changing ? 'Cerrar' : 'Cambiar contraseña'}`}</MenuItem>
                     <MenuItem disableRipple><ColorPicker /></MenuItem>
                     <MenuItem disableRipple><ThemeChanger /></MenuItem>
                 </Menu>

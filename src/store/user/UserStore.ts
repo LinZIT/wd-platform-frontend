@@ -181,12 +181,12 @@ export const useUserStore = create<State>((set, get) => ({
     },
     changeTheme: async (theme: string) => {
         set({ user: { ...get().user, theme } })
-        const url = `${import.meta.env.VITE_BACKEND_API_URL}/user/edit/${get().user.id}/theme`
+        const url = `${import.meta.env.VITE_BACKEND_API_URL}/user/${get().user.id}/change/theme`
         const body = new URLSearchParams({
             'theme': theme,
         });
         const options = {
-            method: 'POST',
+            method: 'PUT',
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/x-www-form-urlencoded',
@@ -211,12 +211,12 @@ export const useUserStore = create<State>((set, get) => ({
     },
     changeColor: async (color: string) => {
         set({ user: { ...get().user, color, lighten: lighten(color, 0.3), darken: darken(color, 0.3), } })
-        const url = `${import.meta.env.VITE_BACKEND_API_URL}/user/edit/${get().user.id}/color`
+        const url = `${import.meta.env.VITE_BACKEND_API_URL}/user/${get().user.id}/change/color`
         const body = new URLSearchParams({
             'color': color,
         });
         const options = {
-            method: 'POST',
+            method: 'PUT',
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/x-www-form-urlencoded',

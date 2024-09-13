@@ -1,6 +1,6 @@
 import { CloseRounded } from "@mui/icons-material";
 import ForumRounded from "@mui/icons-material/ForumRounded";
-import { AppBar, Badge, Container, Dialog, DialogContent, Fab, IconButton, Toolbar, Typography } from "@mui/material";
+import { AppBar, Badge, Box, Container, Dialog, DialogContent, Fab, IconButton, Toolbar, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import { IUser, useUserStore } from "../../store/user/UserStore";
 import { UserList } from "../users/UserList";
@@ -92,18 +92,24 @@ export const Chat = () => {
         <Dialog open={open} onClose={() => setOpen(false)} fullScreen>
             <AppBar elevation={0}>
                 <Toolbar>
-                    <Container sx={{ width: '100%', display: 'flex', flexFlow: 'row wrap', justifyContent: 'space-between', alignItems: 'center', margin: 'auto', }}>
-                        <Typography>Chat</Typography>
-                        <IconButton onClick={() => setOpen(false)}>
-                            <CloseRounded />
-                        </IconButton>
-                    </Container>
+                    <Box sx={{ width: { xs: '100%', md: '80%' }, display: 'flex', flexFlow: 'row wrap', justifyContent: 'space-between', alignItems: 'center', margin: 'auto', p: 0 }}>
+                        <Box>
+                            <Typography>Chat</Typography>
+                        </Box>
+                        <Box sx={{ margin: 0 }}>
+                            <IconButton onClick={() => setOpen(false)}>
+                                <CloseRounded />
+                            </IconButton>
+                        </Box>
+                    </Box>
                 </Toolbar>
             </AppBar>
             <Toolbar />
             <DialogContent>
-                {/* {usuarios && (<UserList usuarios={usuarios} />)} */}
-                {usuarios && (<UserList usuarios={usuarios} />)}
+                <Box sx={{ width: { xs: '100%', md: '80%' }, margin: 'auto' }}>
+                    {/* {usuarios && (<UserList usuarios={usuarios} />)} */}
+                    {usuarios && (<UserList usuarios={usuarios} />)}
+                </Box>
             </DialogContent>
         </Dialog>
     </>)

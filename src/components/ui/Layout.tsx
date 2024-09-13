@@ -5,12 +5,14 @@ import { NavBar } from './nav';
 import { Chat } from '../chat';
 import { Bounce, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { useUserStore } from '../../store/user/UserStore';
 type Props = {
     children: React.ReactNode;
     noMargin?: boolean;
     chat?: boolean;
+    container?: boolean;
 }
-export const Layout: FC<Props> = ({ children, chat = true }) => {
+export const Layout: FC<Props> = ({ children, chat = true, container = true }) => {
     const styles = {
         body: {
             width: '100%',
@@ -24,9 +26,15 @@ export const Layout: FC<Props> = ({ children, chat = true }) => {
         <Box>
             <NavBar />
             <Toolbar />
-            <Container sx={styles.body}>
-                {children}
-            </Container>
+            {container ? (
+                <Container sx={styles.body}>
+                    {children}
+                </Container>
+            ) : (
+                <Box sx={{ ...styles.body, width: '90%' }}>
+                    {children}
+                </Box>
+            )}
             {chat && (
                 <Chat />
             )}
@@ -42,7 +50,7 @@ export const Layout: FC<Props> = ({ children, chat = true }) => {
                 pauseOnFocusLoss
                 draggable
                 pauseOnHover
-                theme="light"
+                theme={useUserStore.getState().user.theme}
                 transition={Bounce}
             />
         </Box >

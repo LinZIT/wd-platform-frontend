@@ -1,7 +1,7 @@
 import { FC, useContext, useState } from 'react'
 import { Box, IconButton } from '@mui/material'
-const { default: Swal } = await import('sweetalert2');
 import { useUserStore } from '../../store/user/UserStore';
+import { toast } from 'react-toastify';
 export const ColorPicker: FC = () => {
     const [changing, setChanging] = useState<boolean>(false);
     const changeColor = useUserStore((state) => state.changeColor);
@@ -10,32 +10,15 @@ export const ColorPicker: FC = () => {
         setChanging(true);
         const result = await changeColor(color);
         if (result.status) {
-            Swal.fire({
-                title: 'Se cambio el color',
-                icon: 'success',
-                toast: true,
-                showConfirmButton: false,
-                timer: 2000,
-                timerProgressBar: true,
-                position: 'bottom'
-            })
+            toast.success('Se cambio el color');
             setChanging(false);
         } else {
-            Swal.fire({
-                title: result.message,
-                icon: 'error',
-                toast: true,
-                showConfirmButton: false,
-                timer: 2000,
-                timerProgressBar: true,
-                position: 'bottom'
-            })
+            toast.success(result.message);
             setChanging(false);
         }
     }
     const colors = [
         { color: '#394775' },
-        // { color: grey[500] },
         { color: '#C0EA0F' },
     ]
 

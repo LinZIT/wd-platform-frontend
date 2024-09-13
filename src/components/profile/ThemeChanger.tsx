@@ -1,8 +1,7 @@
 import { Box, Switch, styled, } from '@mui/material'
 import { useContext, useState } from 'react';
 import { useUserStore } from '../../store/user/UserStore';
-import { TypographyCustom } from '../custom';
-const { default: Swal } = await import('sweetalert2');
+import { toast } from 'react-toastify';
 
 /**
  * Switch con icono de dia y de noche
@@ -95,26 +94,10 @@ export const ThemeChanger = () => {
         setChanging(true);
         const result = await changeTheme(theme);
         if (result.status) {
-            Swal.fire({
-                title: 'Se cambio el tema',
-                icon: 'success',
-                toast: true,
-                showConfirmButton: false,
-                timer: 2000,
-                timerProgressBar: true,
-                position: 'bottom'
-            })
+            toast.success('Se cambio el color');
             setChanging(false);
         } else {
-            Swal.fire({
-                title: result.message,
-                icon: 'error',
-                toast: true,
-                showConfirmButton: false,
-                timer: 2000,
-                timerProgressBar: true,
-                position: 'bottom'
-            })
+            toast.success(result.message);
             setChanging(false);
         }
     }

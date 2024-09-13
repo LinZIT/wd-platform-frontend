@@ -7,6 +7,8 @@ import { Theme, ThemeProvider } from '@emotion/react';
 import { useUserStore } from './store/user/UserStore';
 import { themeDark, themeLight } from './common/theme';
 import { Profile } from './pages/profile/Profile';
+import { Tickets } from './pages/tickets/Tickets';
+import { TicketView } from './pages/tickets/TicketView';
 const useGetTheme = () => {
   const user = useUserStore((state) => state.user);
   const [theme, setTheme] = useState<Theme>(themeLight)
@@ -29,6 +31,8 @@ function App() {
           <Route path='/' element={<Login />} />
           <Route path='/dashboard' element={<Dashboard />} />
           <Route path='/profile' element={<Profile />} />
+          <Route path='/tickets' element={<Tickets />} />
+          <Route path='/ticket/:id' element={<TicketView />} />
         </Routes>
       </BrowserRouter>
     </ThemeProvider>
