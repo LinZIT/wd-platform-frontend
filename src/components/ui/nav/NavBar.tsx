@@ -1,4 +1,4 @@
-import { AppBar, Toolbar, Box, useTheme, Badge, Container, IconButton } from "@mui/material";
+import { AppBar, Toolbar, Box, useTheme, Badge, Container, IconButton, lighten } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
@@ -78,9 +78,9 @@ export const NavBar = () => {
                         <Grid size={4} >
                             <Box sx={{ display: 'flex', justifyContent: 'end' }}>
                                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                    <IconButton onClick={() => setUnreadMessages([])} sx={{ cursor: 'pointer', background: theme.palette.background.default }}>
-                                        <Badge badgeContent={unreadMessages.length === 0} variant="dot" color="error" >
-                                            <NotificationsOutlined />
+                                    <IconButton size="small" onClick={() => setUnreadMessages([])} disableRipple sx={{ cursor: 'pointer', background: theme.palette.mode === 'dark' ? lighten(theme.palette.background.default, 0.1) : theme.palette.background.default }}>
+                                        <Badge badgeContent={unreadMessages.length} variant="dot" color="error" overlap="circular" >
+                                            <NotificationsOutlined sx={{ width: 16, height: 16 }} />
                                         </Badge>
                                     </IconButton>
                                 </Box>

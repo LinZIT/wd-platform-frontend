@@ -8,6 +8,8 @@ import useEcho from '../useEcho';
 import { useMessagesStore } from '../../store/messages/MessagesStore';
 import { MessageBubble } from './MessageBubble';
 import { Form, Formik, FormikState } from 'formik';
+import { Bounce, ToastContainer } from 'react-toastify';
+import { TextFieldCustom } from '../custom';
 export interface IChat {
     id: number;
     user_id: number;
@@ -66,6 +68,7 @@ export const ChatWindow: FC<Props> = ({ usuario }) => {
         setChat([]);
         setLoading(true);
         setChatWindow(false)
+        setIsTyping(false);
     }
     const getMessages = async () => {
         const url = `${import.meta.env.VITE_BACKEND_API_URL}/get/chat/${usuario.id}`;
@@ -164,7 +167,7 @@ export const ChatWindow: FC<Props> = ({ usuario }) => {
                         </Box>
                     )}
                 </DialogContent>
-                <DialogActions sx={{ borderTop: '1px solid rgba(0,0,0,0.1)' }}>
+                <DialogActions>
                     <Formik
                         initialValues={{ message: '' }}
                         onSubmit={(values, { resetForm }) => sendMessage(values, resetForm)}
@@ -173,12 +176,20 @@ export const ChatWindow: FC<Props> = ({ usuario }) => {
                             <Form onSubmit={handleSubmit} style={{ width: '100%' }}>
                                 <Grid container sx={{ margin: 'auto', width: '100%', display: 'flex', flexFlow: 'row wrap', justifyContent: 'space-between', alignItems: 'center' }}>
                                     <Grid size={11}>
-                                        <TextField name="message" placeholder='Escribe tu mensaje' value={values.message} onChange={handleChange} fullWidth onKeyDownCapture={() => {
-                                            if (echo) echo.private(`chat.${usuario?.id}`).whisper('typing', { user })
-                                        }} />
+                                        <TextFieldCustom
+                                            variant='filled'
+                                            name="message"
+                                            placeholder='Escribe tu mensaje'
+                                            value={values.message}
+                                            onChange={handleChange}
+                                            fullWidth
+                                            onKeyDownCapture={() => {
+                                                if (echo) echo.private(`chat.${usuario?.id}`).whisper('typing', { user })
+                                            }}
+                                        />
                                     </Grid>
                                     <Grid size={1} sx={{ display: 'flex', justifyContent: 'center' }}>
-                                        <IconButton type='submit' color="primary">
+                                        <IconButton type='submit'>
                                             <SendRounded />
                                         </IconButton>
                                     </Grid>
@@ -186,7 +197,23 @@ export const ChatWindow: FC<Props> = ({ usuario }) => {
                             </Form>
                         )}
                     </Formik>
+
                 </DialogActions>
+                <ToastContainer
+                    containerId={'chat'}
+                    stacked
+                    position="bottom-right"
+                    autoClose={1500}
+                    hideProgressBar={false}
+                    newestOnTop={false}
+                    closeOnClick
+                    rtl={false}
+                    pauseOnFocusLoss
+                    draggable
+                    pauseOnHover
+                    theme="colored"
+                    transition={Bounce}
+                />
             </Dialog>
         </>
     )

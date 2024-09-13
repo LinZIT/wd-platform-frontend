@@ -1,11 +1,13 @@
 import { CloseRounded } from "@mui/icons-material";
 import ForumRounded from "@mui/icons-material/ForumRounded";
-import { AppBar, Container, Dialog, DialogContent, Fab, IconButton, Toolbar, Typography } from "@mui/material";
+import { AppBar, Badge, Container, Dialog, DialogContent, Fab, IconButton, Toolbar, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import { IUser, useUserStore } from "../../store/user/UserStore";
 import { UserList } from "../users/UserList";
 import useEcho from "../useEcho";
 import { useUserListStore } from "../../store/users/UserListStore";
+import { Bounce, ToastContainer } from "react-toastify";
+import { useMessagesStore } from "../../store/messages/MessagesStore";
 
 export const Chat = () => {
     const [open, setOpen] = useState<boolean>(false);
@@ -13,6 +15,7 @@ export const Chat = () => {
     const user = useUserStore((state) => state.user);
     const echo = useEcho();
     const addUsers = useUserListStore((state) => state.addUsers);
+    const unreadMessages = useMessagesStore((state) => state.unreadMessages);
     useEffect(() => {
         if (user) {
             if (echo) {
@@ -70,7 +73,11 @@ export const Chat = () => {
     }
 
     return (<>
-        <Fab color="primary" aria-label="add" size='medium' onClick={() => setOpen(true)} sx={{
+        <Fab aria-label="add" size='medium' onClick={() => setOpen(true)} sx={{
+            background: user.color,
+            '&:hover': {
+                background: user.darken
+            },
             margin: 0,
             top: 'auto',
             right: 20,
@@ -78,7 +85,9 @@ export const Chat = () => {
             left: 'auto',
             position: 'fixed',
         }}>
-            <ForumRounded />
+            <Badge badgeContent={unreadMessages.length} variant="dot" color="error" overlap="circular" >
+                <ForumRounded sx={{ color: (theme) => theme.palette.getContrastText(user.color) }} />
+            </Badge>
         </Fab>
         <Dialog open={open} onClose={() => setOpen(false)} fullScreen>
             <AppBar elevation={0}>
