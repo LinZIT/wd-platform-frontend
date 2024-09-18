@@ -3,7 +3,7 @@ import { CssBaseline } from '@mui/material';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { Login } from './pages/auth/Login';
 import { Dashboard } from './pages/Dashboard';
-import { Theme, ThemeProvider } from '@emotion/react';
+import { Theme, ThemeProvider } from '@mui/material/styles';
 import { useUserStore } from './store/user/UserStore';
 import { themeDark, themeLight } from './common/theme';
 import { Profile } from './pages/profile/Profile';

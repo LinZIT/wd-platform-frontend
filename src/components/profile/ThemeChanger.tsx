@@ -1,5 +1,5 @@
 import { Box, Switch, styled, } from '@mui/material'
-import { useContext, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { useUserStore } from '../../store/user/UserStore';
 import { toast } from 'react-toastify';
 
@@ -88,28 +88,38 @@ const MaterialUISwitch = styled(Switch)(({ theme }) => ({
 export const ThemeChanger = () => {
     const user = useUserStore((state) => state.user);
     const changeTheme = useUserStore((state) => state.changeTheme);
-    const [themeSelected, setThemeSelected] = useState<boolean>(user.theme === 'light');
-    const [changing, setChanging] = useState<boolean>(false);
-    const changeLocalTheme = async (theme: string) => {
-        setChanging(true);
+    const [themeSelected, setThemeSelected] = useState<boolean>(user.theme === 'dark');
+    const [changing, setChanging] = useState<boolean>(true);
+
+    const changeDBTheme = async (theme: string) => {
         const result = await changeTheme(theme);
         if (result.status) {
             toast.success('Se cambio el color');
             setChanging(false);
         } else {
-            toast.success(result.message);
+            toast.error(result.message);
             setChanging(false);
         }
     }
+
+    const changeLocalTheme = (theme: string) => {
+        setChanging(true);
+        setThemeSelected(theme === 'dark' ? true : false);
+    }
+
+    useEffect(() => {
+        setTimeout(() => setChanging(false), 2000);
+    }, []);
+
     return (
         <Box sx={{ display: 'flex', flexFlow: 'row nowrap', alignItems: 'center', p: 0 }}>
             <MaterialUISwitch
-                checked={!themeSelected}
+                checked={themeSelected}
                 disabled={changing}
                 onChange={
                     (e: any) => {
-                        setThemeSelected(!e.target.checked);
-                        changeLocalTheme(!e.target.checked ? 'light' : 'dark')
+                        changeLocalTheme(e.target.checked ? 'dark' : 'light');
+                        changeDBTheme(e.target.checked ? 'dark' : 'light');
                     }
                 } />
         </Box>

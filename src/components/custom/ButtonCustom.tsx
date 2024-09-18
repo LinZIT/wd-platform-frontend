@@ -11,12 +11,29 @@ export function ButtonCustom<C extends React.ElementType>(
     const { customcolor, nofull } = rest;
     const theme = useTheme();
 
+    const colorForTheme = theme.palette.mode === 'dark' ? user.color : user.darken;
     /**
      * Configuraciones de colores del button custom
      */
-    const background = rest.variant && rest.variant === 'outlined' ? 'transparent' : customcolor ? darken(customcolor, 0.2) : theme.palette.mode === 'dark' ? user.color : user.darken;
-    const borderColor = customcolor ? darken(customcolor, 0.2) : theme.palette.mode === 'dark' ? user.color : user.darken;
-    const color = rest.variant && rest.variant !== 'outlined' ? '#FFF' : customcolor ? darken(customcolor, 0.2) : theme.palette.mode === 'dark' ? user.color : user.darken;
+    const background = rest.variant && rest.variant === 'outlined'
+        ? 'transparent'
+        : customcolor
+            ? darken(customcolor, 0.2)
+            : colorForTheme
+
+    // Si hay un color personalizado de boton, entonces el borde sera el mismo color, oscurecido. Si no hay color personalizado entonces dependiendo del tema sera el color del borde. Color de usuario (para tema oscuro) / color de usuario oscurecido (para tema claro)
+    const borderColor = customcolor
+        ? darken(customcolor, 0.2)
+        : colorForTheme
+
+    // Si no es outlined entonces el color de la letra sera en contraste al color de usuario
+    // Si hay un color personalizado, entonces la letra sera el mismo color pero oscurecido
+    // Si no hay color personalizado, entonces dependiendo del tema sera el color de la letra. Color de usuario (para tema oscuro) / Color de usuario oscurecido (para tema claro)
+    const color = rest.variant && rest.variant !== 'outlined'
+        ? theme.palette.getContrastText(user.color)
+        : customcolor
+            ? darken(customcolor, 0.2)
+            : colorForTheme
 
     /**
      * (HOVER)
