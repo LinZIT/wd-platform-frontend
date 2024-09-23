@@ -9,7 +9,7 @@ export const Tickets = () => {
         validateToken();
     })
     return (
-        <Layout>
+        <Layout container={false}>
             <KanbanBoard />
         </Layout>
     )
