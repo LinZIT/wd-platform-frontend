@@ -5,7 +5,7 @@ import { FC, useEffect, useRef, useState } from 'react'
 import Grid from '@mui/material/Grid2';
 import { useUserStore } from '../../store/user/UserStore';
 import useEcho from '../useEcho';
-import { useMessagesStore } from '../../store/messages/MessagesStore';
+import { UnreadMessage, useMessagesStore } from '../../store/messages/MessagesStore';
 import { MessageBubble } from './MessageBubble';
 import { Form, Formik, FormikState } from 'formik';
 import { Bounce, ToastContainer } from 'react-toastify';
@@ -34,15 +34,22 @@ export const ChatWindow: FC<Props> = ({ usuario }) => {
     const [isTyping, setIsTyping] = useState<boolean>(false);
     const theme = useTheme();
     useEffect(() => {
-        if (open) {
-            echo.private(`chat.${user?.id}`).listen('MessageSent', (event: any) => {
-                if (event.receiver.id === user?.id) {
+        if (user) {
+            if (echo) {
+                if (open) {
+                    echo.private(`chat.${user?.id}`).listen('MessageSent', (event: any) => {
+                        if (event.receiver.id === user?.id) {
+                            setChat((prevChat) => {
+                                const newMessages: IChat[] = [...prevChat, { id: prevChat[prevChat.length - 1].id + 1, created_at: String(new Date()), message: event.message, from: event.sender, user_id: event.receiver.id }]
+                                return newMessages
+                            })
+                            scrollTo(ref)
+                            setIsTyping(false);
+                        }
+                    })
                     getMessages();
-                    setIsTyping(false);
                 }
-            })
-
-            getMessages();
+            }
         }
         return () => {
             if (echo) {
@@ -109,7 +116,8 @@ export const ChatWindow: FC<Props> = ({ usuario }) => {
         const options = {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
+                // 'Accept': 'application/json',
+                // 'Content-Type': 'application/x-www-form-urlencoded',
                 'Authorization': `Bearer ${user?.token}`,
             },
             body
@@ -117,9 +125,12 @@ export const ChatWindow: FC<Props> = ({ usuario }) => {
         try {
             const response = await fetch(url, options);
             const data = await response.json();
-            console.log({ data })
+            setChat((prevChat) => {
+                const newMessages: IChat[] = [...prevChat, { id: prevChat[prevChat.length - 1].id + 1, created_at: String(new Date()), message: values.message, from: user.id, user_id: usuario.id }]
+                return newMessages
+            })
+            scrollTo(ref);
             resetForm();
-            getMessages();
         } catch (error) {
             console.log({ usuario, user });
 
@@ -184,7 +195,14 @@ export const ChatWindow: FC<Props> = ({ usuario }) => {
                                             onChange={handleChange}
                                             fullWidth
                                             onKeyDownCapture={() => {
-                                                if (echo) echo.private(`chat.${usuario?.id}`).whisper('typing', { user })
+                                                if (echo) {
+                                                    try {
+                                                        echo.private(`chat.${usuario?.id}`).whisper('typing', { user })
+                                                    } catch (error) {
+                                                        echo.private(`chat.${usuario?.id}`).whisper('typing', { user })
+                                                    }
+                                                }
+
                                             }}
                                         />
                                     </Grid>

@@ -62,7 +62,7 @@ export const NavBar = () => {
     return (
         <AppBar elevation={0} color="info" sx={{ borderBottom: '1px solid rgba(0,0,0,0.1)' }}>
             <Toolbar>
-                <Container>
+                <Box sx={{ width: '80%', margin: 'auto' }}>
                     <Grid container direction='row' justifyContent='space-between' alignItems='center'>
                         <Grid size={8}>
                             <Box sx={{ display: 'flex', alignItems: 'center', flexFlow: 'row nowrap' }}>
@@ -88,7 +88,7 @@ export const NavBar = () => {
                             </Box>
                         </Grid>
                     </Grid>
-                </Container>
+                </Box>
             </Toolbar>
         </AppBar>
     )

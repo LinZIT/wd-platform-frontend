@@ -13,10 +13,12 @@ export const Chat = () => {
     const [open, setOpen] = useState<boolean>(false);
     const [usuarios, setUsuarios] = useState<any[]>([]);
     const user = useUserStore((state) => state.user);
+    const validateToken = useUserStore((state) => state.validateToken);
     const echo = useEcho();
     const addUsers = useUserListStore((state) => state.addUsers);
     const unreadMessages = useMessagesStore((state) => state.unreadMessages);
     useEffect(() => {
+        validateToken();
         if (user) {
             if (echo) {
                 const status_channel = echo.private(`status_online.${user?.isOnline}`);

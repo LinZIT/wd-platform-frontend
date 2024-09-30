@@ -10,12 +10,15 @@ interface Props extends RadioProps {
   helpertext?: string;
   onChange: (e: ChangeEvent<any>) => void;
 }
+
 type RadioOption = {
   label: string;
   value: string;
 }
 export const RadioGroupCustom = (props: Props) => {
+
   const user = useUserStore((state) => state.user);
+
   return (
     <FormControl fullWidth error={props.error}>
       <FormLabel id={`custom-radio-button-name-${props.label}`} sx={{

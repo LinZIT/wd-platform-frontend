@@ -90,7 +90,7 @@ export const useUserStore = create<State>((set, get) => ({
         const options = {
             method: 'POST',
             headers: {
-                // 'Accept': 'application/json',
+                'Accept': 'application/json',
                 'Content-Type': 'application/x-www-form-urlencoded',
             },
             body: new URLSearchParams({
@@ -154,6 +154,7 @@ export const useUserStore = create<State>((set, get) => ({
             method: 'GET',
             headers: {
                 'Accept': 'application/json',
+                'Content-Type': 'application/x-www-form-urlencoded',
                 'Authorization': `Bearer ${token}`,
             }
         }
