@@ -29,7 +29,7 @@ export const Tickets = () => {
             }
         }
 
-    })
+    }, []);
     return (
         <Layout container={false}>
             <Box sx={{ display: 'flex', flexFlow: 'row wrap', justifyContent: 'space-between', alignItems: 'center', gap: 4 }}>

@@ -1,7 +1,6 @@
 import Button, { ButtonProps } from "@mui/material/Button";
 import { lighten, darken, useTheme } from "@mui/material";
 import { Dispatch } from "react";
-const { default: Swal } = await import('sweetalert2');
 import { blue, red } from "@mui/material/colors";
 import { useUserStore } from "../../store/user/UserStore";
 
@@ -12,24 +11,7 @@ export function ButtonCancelCustom<C extends React.ElementType>(
     const user = useUserStore((state) => state.user);
     const { customcolor } = rest;
     const theme = useTheme();
-    const onClick = () => {
-        Swal.fire({
-            title: '¿Deseas borrar todos los campos?',
-            icon: 'warning',
-            showCancelButton: true,
-            cancelButtonColor: red[500],
-            confirmButtonColor: blue[500],
-            confirmButtonText: 'Si, deseo borrar todos los campos',
-            cancelButtonText: 'Cancelar',
-            focusCancel: true
-        }).then((click) => {
-            if (click.isConfirmed) {
-                rest.setValues(rest.initialValues)
-            }
-        })
-    }
     return <Button
-        onClick={onClick}
         disableElevation
         sx={{
             fontFamily: 'Geologica',

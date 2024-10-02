@@ -53,7 +53,9 @@ export const ChatWindow: FC<Props> = ({ usuario }) => {
         }
         return () => {
             if (echo) {
-                echo.leave(`chat.${user.id}`);
+                if (open) {
+                    echo.leave(`chat.${user.id}`);
+                }
             }
         };
     }, [open, usuario])
@@ -62,7 +64,7 @@ export const ChatWindow: FC<Props> = ({ usuario }) => {
         setChatWindow(true);
         const exceptThisUser = getUnreadMessages().filter((message) => message.sender.id !== usuario.id)
         setUnreadMessages(exceptThisUser);
-        echo.private(`chat.${user?.id}`).listenForWhisper('typing', (event: any) => {
+        echo.private(`chat.${user?.id}`).listenForWhisper('typing', () => {
             if (!isTyping) {
                 setIsTyping(true);
             }

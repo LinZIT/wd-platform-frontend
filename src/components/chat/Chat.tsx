@@ -29,12 +29,12 @@ export const Chat = () => {
                     .joining((user: any) => {
                         console.log('joining', { user })
                         // getAllUsers();
-                        handleCallbackJoining(user);
+                        handleCallbackJoining();
                     })
                     .leaving((user: any) => {
                         console.log('leaving', { user })
                         // getAllUsers();
-                        handleCallbackLeaving(user);
+                        handleCallbackLeaving();
                     })
             }
         }
@@ -46,11 +46,11 @@ export const Chat = () => {
         getOnlineUsers();
     }
 
-    const handleCallbackLeaving = (user: IUser) => {
+    const handleCallbackLeaving = () => {
         console.log('handleCallbackLeaving');
         getOnlineUsers();
     }
-    const handleCallbackJoining = (user: IUser) => {
+    const handleCallbackJoining = () => {
         console.log('handleCallbackJoining');
         getOnlineUsers();
     }
