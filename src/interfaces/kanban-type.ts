@@ -2,7 +2,7 @@ import { IDepartment } from "./department-type";
 import { IUserTicket } from "./user-type";
 
 export interface IColumn {
-    id: number;
+    id: string;
     title: string;
     status: TicketStatus;
 }

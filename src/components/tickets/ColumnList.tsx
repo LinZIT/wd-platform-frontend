@@ -7,7 +7,7 @@ import { useState } from "react";
 interface Props {
     columns: IColumn[];
     tickets: ITicket[];
-    columnsId: number[];
+    columnsId: string[] | number[];
 }
 export const ColumnList = ({ columns, tickets, columnsId }: Props) => {
     const [isDraggingATicket, setIsDraggingATicket] = useState<boolean>(false);

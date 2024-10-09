@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Box } from "@mui/material";
 import { DndContext, DragEndEvent, DragOverEvent, DragOverlay, DragStartEvent, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
@@ -8,6 +8,8 @@ import { IUserTicket } from "../../interfaces/user-type";
 import { IColumn, ITicket } from "../../interfaces/kanban-type";
 import { Ticket } from "./Ticket";
 import { ColumnList } from "./ColumnList";
+import { useUserStore } from "../../store/user/UserStore";
+import { getCookieValue } from "../../lib/functions";
 
 const initialValues: ITicket[] = [
     {
@@ -36,121 +38,53 @@ const initialValues: ITicket[] = [
         updated_at: "ma;ana",
         status: "Abierto"
     },
-    {
-        id: 124456789,
-        description: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptatum aliquam fugit laborum a, voluptas recusandae minima dolore in molestias veritatis quam incidunt fuga aspernatur? Tempora ipsa dolorum expedita iusto nam?',
-        user_id: 1,
-        user: {
-            id: 1,
-            names: "Vanessa",
-            surnames: "Rodriguez",
-            document: "12345",
-            created_at: "hoy sdjajdsaj",
-            updated_at: "ayer sdajkdasjdkas"
-        },
-        department_id: 2,
-        department: {
-            id: 1,
-            description: 'Board',
-            created_at: "hoy sdjajdsaj",
-            updated_at: "ayer sdajkdasjdkas"
-        },
-        category: "GouCambis",
-        priority: "Alta",
-        number_of_actualizations: 3,
-        created_at: "09/23/2024",
-        updated_at: "ma;ana",
-        status: "Abierto"
-    },
-    // {
-    //     id: 223456789,
-    //     description: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptatum aliquam fugit laborum a, voluptas recusandae minima dolore in molestias veritatis quam incidunt fuga aspernatur? Tempora ipsa dolorum expedita iusto nam?',
-    //     user_id: 2,
-    //     user: {
-    //         id: 2,
-    //         names: "Isabela",
-    //         surnames: "Mouzo",
-    //         document: "12345",
-    //         created_at: "hoy sdjajdsaj",
-    //         updated_at: "ayer sdajkdasjdkas"
-    //     },
-    //     department_id: 4,
-    //     department: {
-    //         id: 3,
-    //         description: 'Human Resources',
-    //         created_at: "hoy sdjajdsaj",
-    //         updated_at: "ayer sdajkdasjdkas"
-    //     },
-    //     category: "GouCambis",
-    //     priority: "Alta",
-    //     number_of_actualizations: 0,
-    //     created_at: "09/23/2024",
-    //     updated_at: "ma;ana",
-    //     status: "Cancelado"
-    // },
-    {
-        id: 233456789,
-        description: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptatum aliquam fugit laborum a, voluptas recusandae minima dolore in molestias veritatis quam incidunt fuga aspernatur? Tempora ipsa dolorum expedita iusto nam?',
-        user_id: 3,
-        user: {
-            id: 3,
-            names: "Glen",
-            surnames: "Benitez",
-            document: "12345",
-            created_at: "hoy sdjajdsaj",
-            updated_at: "ayer sdajkdasjdkas"
-        },
-        department_id: 2,
-        department: {
-            id: 1,
-            description: 'Board',
-            created_at: "hoy sdjajdsaj",
-            updated_at: "ayer sdajkdasjdkas"
-        },
-        category: "GouCambis",
-        priority: "Alta",
-        number_of_actualizations: 20,
-        created_at: "09/23/2024",
-        updated_at: "ma;ana",
-        status: "En Proceso"
-    },
-    {
-        id: 333456789,
-        description: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptatum aliquam fugit laborum a, voluptas recusandae minima dolore in molestias veritatis quam incidunt fuga aspernatur? Tempora ipsa dolorum expedita iusto nam?',
-        user_id: 4,
-        user: {
-            id: 4,
-            names: "Daiaska",
-            surnames: "De Franca",
-            document: "12345",
-            created_at: "hoy sdjajdsaj",
-            updated_at: "ayer sdajkdasjdkas"
-        },
-        department_id: 6,
-        department: {
-            id: 6,
-            description: 'Analysis',
-            created_at: "hoy sdjajdsaj",
-            updated_at: "ayer sdajkdasjdkas"
-        },
-        category: "Excel",
-        priority: "Alta",
-        number_of_actualizations: 8,
-        created_at: "09/23/2024",
-        updated_at: "ma;ana",
-        status: "Terminado"
-    },
-];
-const columns: IColumn[] = [
-    { id: 1, title: 'Abierto', status: 'Abierto' },
-    { id: 2, title: 'En Proceso', status: 'En Proceso' },
-    { id: 3, title: 'Terminados', status: 'Terminado' },
-    { id: 4, title: 'Cancelados', status: 'Cancelado' },
 ]
+
+const columns: IColumn[] = [
+    { id: 'columna-1', title: 'Abierto', status: 'Abierto' },
+    { id: 'columna-2', title: 'En Proceso', status: 'En Proceso' },
+    { id: 'columna-3', title: 'Terminados', status: 'Terminado' },
+    { id: 'columna-4', title: 'Cancelados', status: 'Cancelado' },
+]
+
+const useTickets = () => {
+
+    const [tickets, setTickets] = useState<ITicket[]>([]);
+
+    const user = useUserStore((state) => state.user);
+
+    useEffect(() => {
+        getTickets();
+    }, [])
+
+    const getTickets = async () => {
+        const url = `${import.meta.env.VITE_BACKEND_API_URL}/tickets`;
+        const options = {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Authorization': `Bearer ${user?.token ?? getCookieValue('token')}`,
+            },
+        };
+        try {
+            const response = await fetch(url, options);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const { data } = await response.json();
+            console.log({ data })
+            setTickets(data.tickets);
+        } catch (error) {
+            console.log(error);
+        }
+    }
+    return { tickets, setTickets }
+}
+
 export const KanbanBoard = () => {
 
-
-    const [tickets, setTickets] = useState<ITicket[]>(initialValues);
+    const { tickets, setTickets } = useTickets();
     const columnsId = useMemo(() => columns.map(column => column.id), [columns]);
 
     const [activeTicket, setActiveTicket] = useState<ITicket | null>(null);
