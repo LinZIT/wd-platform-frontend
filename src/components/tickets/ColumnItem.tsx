@@ -1,6 +1,6 @@
 import { SortableContext, useSortable } from "@dnd-kit/sortable";
 import { Box, lighten, darken } from "@mui/material";
-import { Dispatch, SetStateAction, useMemo, useState } from "react";
+import { Dispatch, memo, SetStateAction, useMemo, useState } from "react";
 import { useUserStore } from "../../store/user/UserStore";
 import { TypographyCustom } from "../custom";
 import { IColumn, ITicket } from "../../interfaces/kanban-type";
@@ -13,8 +13,9 @@ interface Props {
     tickets: ITicket[];
     isDraggingATicket: boolean;
     setIsDraggingATicket: Dispatch<SetStateAction<boolean>>;
+    numbers: { abiertos: number, en_proceso: number, terminados: number, cancelados: number };
 }
-export const ColumnItem = ({ column, tickets, isDraggingATicket, setIsDraggingATicket }: Props) => {
+export const ColumnItem = memo(function ColumnItem({ column, tickets, isDraggingATicket, setIsDraggingATicket, numbers }: Props) {
 
     const user = useUserStore(state => state.user);
     const { setNodeRef, attributes, listeners, transform, transition, isDragging } = useSortable({
@@ -27,6 +28,8 @@ export const ColumnItem = ({ column, tickets, isDraggingATicket, setIsDraggingAT
     const ticketsId = useMemo(() => {
         return tickets.map(t => t.id);
     }, [tickets]);
+
+    let cat = column.status === 'Abierto' ? numbers.abiertos : column.status === 'En Proceso' ? numbers.en_proceso : column.status === 'Terminado' ? numbers.terminados : numbers.cancelados;
 
     return (
         <Box
@@ -43,7 +46,7 @@ export const ColumnItem = ({ column, tickets, isDraggingATicket, setIsDraggingAT
                     alignItems: 'center',
                     justifyContent: 'center',
                 }}>
-                <TypographyCustom variant="overline">{column.title}</TypographyCustom>
+                <TypographyCustom variant="overline">{column.title} {cat}</TypographyCustom>
             </Box>
             <Box sx={{ flexGrow: 1, minHeight: isDraggingATicket ? 250 : 20, border: isDraggingATicket ? `2px dashed ${user.color}` : '0px solid black', borderRadius: 4, borderTopRightRadius: 0, borderTopLeftRadius: 0 }} id={column.status} {...attributes} {...listeners} ref={setNodeRef}>
                 {isDraggingATicket && <Box sx={{ display: 'flex', flexFlow: 'row wrap', alignItems: 'center', justifyContent: 'center', marginBlock: 2, color: user.color }}>
@@ -58,4 +61,4 @@ export const ColumnItem = ({ column, tickets, isDraggingATicket, setIsDraggingAT
             </Box>
         </Box >
     )
-}
+})

@@ -8,8 +8,9 @@ interface Props {
     columns: IColumn[];
     tickets: ITicket[];
     columnsId: string[] | number[];
+    numbers: { abiertos: number, en_proceso: number, terminados: number, cancelados: number };
 }
-export const ColumnList = ({ columns, tickets, columnsId }: Props) => {
+export const ColumnList = ({ columns, tickets, columnsId, numbers }: Props) => {
     const [isDraggingATicket, setIsDraggingATicket] = useState<boolean>(false);
 
     const theme = useTheme();
@@ -39,7 +40,7 @@ export const ColumnList = ({ columns, tickets, columnsId }: Props) => {
         <SortableContext items={columnsId}>
             <Box sx={styles.mainContainer}>
                 <Box sx={styles.scrollContainer}>
-                    {columns.map(column => <ColumnItem key={column.id} column={column} tickets={tickets.filter(ti => ti.status === column.status)} isDraggingATicket={isDraggingATicket}
+                    {columns.map(column => <ColumnItem key={column.id} column={column} numbers={numbers} tickets={tickets.filter(ti => ti.status === column.status)} isDraggingATicket={isDraggingATicket}
                         setIsDraggingATicket={setIsDraggingATicket} />)}
                 </Box>
             </Box>

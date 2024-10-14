@@ -4,14 +4,14 @@ import { ITicket } from "../../interfaces/kanban-type";
 import { useUserStore } from "../../store/user/UserStore";
 import { TypographyCustom } from "../custom";
 import { CSS } from "@dnd-kit/utilities";
-import { SetStateAction, Dispatch, useEffect } from 'react';
+import { SetStateAction, Dispatch, useEffect, memo } from 'react';
 import AddRounded from "@mui/icons-material/AddRounded";
 
 interface Props {
     ticket: ITicket;
     setIsDraggingATicket?: Dispatch<SetStateAction<boolean>>;
 }
-export const Ticket = ({ ticket, setIsDraggingATicket }: Props) => {
+export const Ticket = memo(function Ticket({ ticket, setIsDraggingATicket }: Props) {
     const user = useUserStore(state => state.user);
 
     const { setNodeRef, attributes, listeners, transform, transition, isDragging } = useSortable({
@@ -85,4 +85,4 @@ export const Ticket = ({ ticket, setIsDraggingATicket }: Props) => {
             </Box>
         </Box>
     )
-}
+})

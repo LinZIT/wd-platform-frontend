@@ -50,6 +50,7 @@ const columns: IColumn[] = [
 const useTickets = () => {
 
     const [tickets, setTickets] = useState<ITicket[]>([]);
+    const [numbers, setNumbers] = useState<{ abiertos: number, en_proceso: number, terminados: number, cancelados: number }>({ abiertos: 0, en_proceso: 0, terminados: 0, cancelados: 0 });
 
     const user = useUserStore((state) => state.user);
 
@@ -75,16 +76,17 @@ const useTickets = () => {
             const { data } = await response.json();
             console.log({ data })
             setTickets(data.tickets);
+            setNumbers(data.numbers);
         } catch (error) {
             console.log(error);
         }
     }
-    return { tickets, setTickets }
+    return { tickets, setTickets, numbers, setNumbers }
 }
 
 export const KanbanBoard = () => {
 
-    const { tickets, setTickets } = useTickets();
+    const { tickets, setTickets, numbers, setNumbers } = useTickets();
     const columnsId = useMemo(() => columns.map(column => column.id), [columns]);
 
     const [activeTicket, setActiveTicket] = useState<ITicket | null>(null);
@@ -136,7 +138,6 @@ export const KanbanBoard = () => {
         }
     }
     const onDragOver = (event: DragOverEvent) => {
-
         const { active, over } = event;
 
         if (!over) return;
@@ -182,7 +183,7 @@ export const KanbanBoard = () => {
     return (
         <DndContext sensors={sensors} onDragStart={onDragStart} onDragEnd={onDragEnd} onDragOver={onDragOver}>
             <Box sx={{ mt: 5 }}>
-                <ColumnList columns={columns} tickets={tickets} columnsId={columnsId} />
+                <ColumnList columns={columns} tickets={tickets} columnsId={columnsId} numbers={numbers} />
             </Box>
             {createPortal(
                 <DragOverlay>
