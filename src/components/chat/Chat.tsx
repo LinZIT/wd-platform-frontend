@@ -39,7 +39,7 @@ export const Chat = () => {
             }
         }
         getOnlineUsers();
-    }, [user.token])
+    }, [])
 
     const handleCallback = () => {
         console.log('handleCallback');

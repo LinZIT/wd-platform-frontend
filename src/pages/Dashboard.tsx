@@ -17,7 +17,7 @@ export const Dashboard = () => {
     const validateToken = useUserStore((state) => state.validateToken);
     useEffect(() => {
         validateToken();
-    }, [user.token])
+    }, [])
 
     const days: any = {
         1: 'Lunes',

@@ -43,7 +43,7 @@ export const NavBar = () => {
                 echo.leave(`room.${user.department?.id}`);
             }
         };
-    }, [user.token]);
+    }, []);
     const sound = new Howl({
         src: ['/message.mp3'],
     })

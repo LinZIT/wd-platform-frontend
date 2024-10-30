@@ -1,197 +1,84 @@
-import { useEffect, useMemo, useState } from "react";
-import { Box } from "@mui/material";
-import { DndContext, DragEndEvent, DragOverEvent, DragOverlay, DragStartEvent, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
-import { arrayMove } from "@dnd-kit/sortable";
-import { createPortal } from "react-dom";
-import { IDepartment } from "../../interfaces/department-type";
-import { IUserTicket } from "../../interfaces/user-type";
-import { IColumn, ITicket } from "../../interfaces/kanban-type";
+import { FC } from "react";
+import { useTheme, darken, lighten, Box } from "@mui/material";
+import { purple, blue, green, red } from "@mui/material/colors";
+import { useTickets } from "../../hooks/useTickets";
+import { TypographyCustom } from "../custom";
 import { Ticket } from "./Ticket";
-import { ColumnList } from "./ColumnList";
-import { useUserStore } from "../../store/user/UserStore";
-import { getCookieValue } from "../../lib/functions";
+import { motion } from "framer-motion";
 
-const initialValues: ITicket[] = [
-    {
-        id: 123456789,
-        description: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptatum aliquam fugit laborum a, voluptas recusandae minima dolore in molestias veritatis quam incidunt fuga aspernatur? Tempora ipsa dolorum expedita iusto nam?',
-        user_id: 1,
-        user: {
-            id: 1,
-            names: "Vanessa",
-            surnames: "Rodriguez",
-            document: "12345",
-            created_at: "hoy sdjajdsaj",
-            updated_at: "ayer sdajkdasjdkas"
-        },
-        department_id: 2,
-        department: {
-            id: 1,
-            description: 'Board',
-            created_at: "hoy sdjajdsaj",
-            updated_at: "ayer sdajkdasjdkas"
-        },
-        category: "GouCambis",
-        priority: "Alta",
-        number_of_actualizations: 3,
-        created_at: "09/23/2024",
-        updated_at: "ma;ana",
-        status: "Abierto"
-    },
-]
-
-const columns: IColumn[] = [
-    { id: 'columna-1', title: 'Abierto', status: 'Abierto' },
-    { id: 'columna-2', title: 'En Proceso', status: 'En Proceso' },
-    { id: 'columna-3', title: 'Terminados', status: 'Terminado' },
-    { id: 'columna-4', title: 'Cancelados', status: 'Cancelado' },
-]
-
-const useTickets = () => {
-
-    const [tickets, setTickets] = useState<ITicket[]>([]);
-    const [numbers, setNumbers] = useState<{ abiertos: number, en_proceso: number, terminados: number, cancelados: number }>({ abiertos: 0, en_proceso: 0, terminados: 0, cancelados: 0 });
-
-    const user = useUserStore((state) => state.user);
-
-    useEffect(() => {
-        getTickets();
-    }, [])
-
-    const getTickets = async () => {
-        const url = `${import.meta.env.VITE_BACKEND_API_URL}/tickets`;
-        const options = {
-            method: 'GET',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'Authorization': `Bearer ${user?.token ?? getCookieValue('token')}`,
-            },
-        };
-        try {
-            const response = await fetch(url, options);
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            const { data } = await response.json();
-            console.log({ data })
-            setTickets(data.tickets);
-            setNumbers(data.numbers);
-        } catch (error) {
-            console.log(error);
-        }
-    }
-    return { tickets, setTickets, numbers, setNumbers }
-}
-
-export const KanbanBoard = () => {
-
+export const KanbanBoard: FC = () => {
     const { tickets, setTickets, numbers, setNumbers } = useTickets();
-    const columnsId = useMemo(() => columns.map(column => column.id), [columns]);
-
-    const [activeTicket, setActiveTicket] = useState<ITicket | null>(null);
-
-    const sensors = useSensors(
-        useSensor(PointerSensor, {
-            activationConstraint: {
-                distance: 10,
-            }
-        })
-    )
-
-    const onDragStart = (event: DragStartEvent) => {
-        if (event.active.data.current?.type === 'Column') {
-            return;
+    const theme = useTheme();
+    const columns = [
+        { id: 1, cod: 'abiertos', status: 'Abiertos', color: purple[300], tickets: tickets.filter((ticket) => ticket.status === 'Abierto'), number: numbers['abiertos'] },
+        { id: 2, cod: 'en_proceso', status: 'En Proceso', color: blue[500], tickets: tickets.filter((ticket) => ticket.status === 'En Proceso'), number: numbers['en_proceso'] },
+        { id: 3, cod: 'terminados', status: 'Terminados', color: green[500], tickets: tickets.filter((ticket) => ticket.status === 'Terminado'), number: numbers['terminados'] },
+        { id: 4, cod: 'cancelados', status: 'Cancelados', color: red[500], tickets: tickets.filter((ticket) => ticket.status === 'Cancelado'), number: numbers['cancelados'] },
+    ]
+    const styles = {
+        mainContainer: {
+            display: 'flex', flexFlow: 'row nowrap', overflowX: 'hidden', minWidth: '100%', maxWidth: '100vw', alignItems: 'center', justifyContent: 'center', mt: 5
+        },
+        scrollContainer: {
+            display: 'flex', flexFlow: 'row nowrap', pb: 2, gap: 2, mb: 2, width: '100vw', overflowX: 'scroll',
+            '&::-webkit-scrollbar': {
+                height: '5px',
+                width: '5px',
+            },
+            '&::-webkit-scrollbar-track': {
+                borderRadius: '5px',
+                backgroundColor: darken(theme.palette.background.default, 0.2),
+                cursor: theme.palette.mode === 'dark' ? "url('scroll-white.svg') 25 20, pointer" : "url('scroll.svg') 25 20, pointer",
+            },
+            '&::-webkit-scrollbar-thumb': {
+                borderRadius: '5px',
+                backgroundColor: lighten(theme.palette.background.default, 0.2),
+                cursor: theme.palette.mode === 'dark' ? "url('scroll-white.svg') 25 20, pointer" : "url('scroll.svg') 25 20, pointer",
+            },
         }
-        if (event.active.data.current?.type === 'Ticket') {
-            if (event.active.data.current?.ticket.placeholder) return;
-            setActiveTicket(event.active.data.current?.ticket);
-            return;
-        }
-    }
-
-    const onDragEnd = (event: DragEndEvent) => {
-        setActiveTicket(null);
-        const { active, over } = event;
-        if (!over) return;
-
-        const activeId = active.id;
-        const overId = over.id;
-
-        if (activeId === overId) return;
-
-        const isActiveATicket = active.data.current?.type === 'Ticket';
-        const isOverATicket = over.data.current?.type === 'Ticket';
-        const isOverAColumn = over.data.current?.type === 'Column';
-        if (isActiveATicket && isOverAColumn) {
-            const activeIndex = tickets.findIndex((t) => t.id === activeId);
-            const overIndex = tickets.findIndex((t) => t.id === overId);
-            tickets[activeIndex].status = over.data.current?.column.status;
-            return arrayMove(tickets, activeIndex, overIndex)
-
-        }
-        if (isActiveATicket && isOverATicket) {
-            setTickets((tickets) => {
-                const activeIndex = tickets.findIndex((t) => t.id === activeId);
-                return arrayMove(tickets, activeIndex, activeIndex)
-            })
-        }
-    }
-    const onDragOver = (event: DragOverEvent) => {
-        const { active, over } = event;
-
-        if (!over) return;
-
-        const activeId = active.id;
-        const overId = over.id;
-
-        if (activeId === overId) return;
-
-        const isActiveATicket = active.data.current?.type === 'Ticket';
-
-        // Si el elemento en el drag no es un ticket no hacemos nada
-        if (!isActiveATicket) return;
-
-        if (isActiveATicket && active.data.current?.ticket.placeholder) return;
-
-        const isOverATicket = over.data.current?.type === 'Ticket';
-        const isOverAColumn = over.data.current?.type === 'Column';
-
-
-
-        // Si el elemento en el drag es un ticket y esta encima de una columna
-        if (isActiveATicket && isOverAColumn) {
-            setTickets((tickets) => {
-                const activeIndex = tickets.findIndex((t) => t.id === activeId);
-                const overIndex = tickets.findIndex((t) => t.id === overId);
-                tickets[activeIndex].status = over.data.current?.column.status;
-                return arrayMove(tickets, activeIndex, overIndex)
-            })
-        }
-
-        // Si el elemento en el drag es un ticket y esta encima de un ticket
-        if (isActiveATicket && isOverATicket) {
-            setTickets((tickets) => {
-                const activeIndex = tickets.findIndex((t) => t.id === activeId);
-                const overIndex = tickets.findIndex((t) => t.id === overId);
-                tickets[activeIndex].status = tickets[overIndex].status;
-                return arrayMove(tickets, activeIndex, overIndex)
-            })
-        }
-
     }
     return (
-        <DndContext sensors={sensors} onDragStart={onDragStart} onDragEnd={onDragEnd} onDragOver={onDragOver}>
-            <Box sx={{ mt: 5 }}>
-                <ColumnList columns={columns} tickets={tickets} columnsId={columnsId} numbers={numbers} />
+        <Box sx={styles.mainContainer}>
+            <Box sx={styles.scrollContainer}>
+                {columns.map((column) => <Box>
+                    <Box
+                        sx={{ border: '1px solid rgba(150,150,150,0.5)', borderRadius: 4, minWidth: 400, maxWidth: 400, height: '100%', display: 'flex', flexFlow: 'column wrap' }}
+                    >
+                        <Box
+                            sx={{
+                                p: 1,
+                                background: (theme) => theme.palette.mode === 'dark' ? lighten(theme.palette.background.default, 0.1) : darken(theme.palette.background.default, 0.1),
+                                borderTopLeftRadius: 15,
+                                borderTopRightRadius: 15,
+                                width: '100%',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                borderBottom: `3px solid ${column.color}`
+                            }}>
+                            <TypographyCustom variant="overline">{column.status}</TypographyCustom>
+                        </Box>
+                        <Box sx={{ flexGrow: 1, minHeight: 20, borderRadius: 4, borderTopRightRadius: 0, borderTopLeftRadius: 0 }} >
+
+                            <motion.section
+                                initial="hidden"
+                                animate="show"
+                                variants={{
+                                    hidden: { opacity: 0 },
+                                    show: {
+                                        opacity: 1, transition: {
+                                            staggerChildren: 0.25
+                                        }
+                                    }
+                                }}>
+                                {column.tickets.map((ticket) => (
+                                    <Ticket key={ticket.id} ticket={ticket} setTickets={setTickets} />
+                                ))}
+                            </motion.section>
+                        </Box>
+                    </Box >
+                </Box>)}
             </Box>
-            {createPortal(
-                <DragOverlay>
-                    {activeTicket && <Ticket ticket={activeTicket} />}
-                </DragOverlay>
-                , document.body
-            )}
-        </DndContext>
+        </Box>
     )
 }
-
