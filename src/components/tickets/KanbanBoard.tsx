@@ -40,7 +40,7 @@ export const KanbanBoard: FC = () => {
     return (
         <Box sx={styles.mainContainer}>
             <Box sx={styles.scrollContainer}>
-                {columns.map((column) => <Box>
+                {columns.map((column) => <Box key={column.id}>
                     <Box
                         sx={{ border: '1px solid rgba(150,150,150,0.5)', borderRadius: 4, minWidth: 400, maxWidth: 400, height: '100%', display: 'flex', flexFlow: 'column wrap' }}
                     >

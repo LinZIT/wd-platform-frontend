@@ -2,7 +2,7 @@ import { MoreHorizRounded, Check, CloseRounded } from "@mui/icons-material";
 import { Box, Divider, AvatarGroup, Avatar, IconButton, Menu, MenuList, Chip, MenuItem, ListItemIcon, ListItemText, Dialog, DialogContent, CircularProgress, DialogActions, darken, lighten, useTheme } from '@mui/material';
 import { purple, blue, green, red, grey, yellow } from "@mui/material/colors";
 import { motion } from "framer-motion";
-import { Dispatch, SetStateAction, FC, useState, useEffect, Fragment } from "react";
+import { Dispatch, SetStateAction, FC, useState, useEffect, Fragment, useRef } from "react";
 import { ITicket, TicketStatus } from "../../interfaces/kanban-type";
 import { IUser, useUserStore } from "../../store/user/UserStore";
 import { ButtonCustom, TextFieldCustom, TypographyCustom } from "../custom";
@@ -101,6 +101,8 @@ const TicketInformation: FC<TicketInformationProps> = ({ ticket_id, open, setOpe
     const [actualizations, setActualizations] = useState<IActualization[] | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const theme = useTheme();
+    const ref = useRef();
+
     useEffect(() => {
         if (open) {
             getTicketInformation();
@@ -125,6 +127,7 @@ const TicketInformation: FC<TicketInformationProps> = ({ ticket_id, open, setOpe
                 const { data, actualizations } = await response.json();
                 setTicket(data)
                 setActualizations(actualizations);
+                scrollTo(ref);
             } else {
                 console.error('Error fetching ticket information');
             }
@@ -132,9 +135,17 @@ const TicketInformation: FC<TicketInformationProps> = ({ ticket_id, open, setOpe
             console.error(error);
         } finally {
             setLoading(false);
+
         }
     }
-
+    const scrollTo = (ref: any) => {
+        if (ref && ref.current) {
+            console.log({ chuchuwa: ref.current.scrollHeight, chuchuwa2: ref.current.offsetHeight })
+            setTimeout(() => {
+                ref.current.scrollTo({ top: (ref.current.scrollHeight - ref.current.offsetHeight), behavior: "smooth" });
+            }, 500)
+        }
+    }
     const handleClose = () => {
         setOpen(false);
     }
@@ -143,60 +154,74 @@ const TicketInformation: FC<TicketInformationProps> = ({ ticket_id, open, setOpe
         const url = `${import.meta.env.VITE_BACKEND_API_URL}/ticket/${ticket?.id}/actualization`;
 
         const body = new URLSearchParams({
-            actualization: values.actualization
+            description: values.actualization
         })
 
         const options = {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
+                'Content-Type': 'application/x-www-form-urlencoded',
                 'Authorization': `Bearer ${user?.token ?? getCookieValue('token')}`
             },
             body
         }
+        try {
+            const response = await fetch(url, options);
+            switch (response.status) {
+                case 200:
+                    const { data } = await response.json();
+                    setActualizations(data);
+                    resetForm();
+                    break;
+                default:
+                    console.log('Ocurrio un error con el registro de la actualizacion');
+                    break;
+            }
+        } catch (error) {
+            console.log({ error })
+        }
+
+
     }
 
 
     return (<Dialog fullWidth={true} maxWidth='xl' open={open} PaperProps={{ sx: { borderRadius: 4, }, }} disableScrollLock={false}  >
 
         <DialogContent sx={{ overflowY: 'auto' }} >
+            <Box sx={{ display: 'flex', flexFlow: 'column wrap', width: '100%', margin: 'auto', position: 'relative', }}>
+                <IconButton onClick={handleClose} sx={{ position: 'absolute', top: 1, right: 1 }}>
+                    <CloseRounded />
+                </IconButton>
+                <TypographyCustom fontWeight="200" variant="subtitle2">{`Ticket #${ticket?.id}`}</TypographyCustom>
+                <TypographyCustom variant='h6'>{`${ticket?.user.names} ${ticket?.user.surnames}`}</TypographyCustom>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: 1, marginBlock: 2 }}>
+                    <Chip size="small" label={ticket?.department.description} sx={{ width: 80 }} />
+                    <Chip size="small" label={ticket?.category} sx={{ width: 80 }} />
+                    <Chip size="small" label={ticket?.priority} sx={{ width: 80 }} />
+                </Box>
+                <TypographyCustom variant="subtitle2" color="text.secondary">{`${moment(new Date(ticket?.created_at ?? '')).format('D/M/Y')}`}</TypographyCustom>
 
-            {!loading && (
+                <Box sx={{ marginBlock: 2 }}>
+                    <TypographyCustom variant="body1">{ticket?.description}</TypographyCustom>
+                </Box>
 
-                <Box sx={{ display: 'flex', flexFlow: 'column wrap', width: '100%', margin: 'auto', position: 'relative', }}>
-                    <IconButton onClick={handleClose} sx={{ position: 'absolute', top: 1, right: 1 }}>
-                        <CloseRounded />
-                    </IconButton>
-                    <TypographyCustom fontWeight="200" variant="subtitle2">{`Ticket #${ticket?.id}`}</TypographyCustom>
-                    <TypographyCustom variant='h6'>{`${ticket?.user.names} ${ticket?.user.surnames}`}</TypographyCustom>
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: 1, marginBlock: 2 }}>
-                        <Chip size="small" label={ticket?.department.description} sx={{ width: 80 }} />
-                        <Chip size="small" label={ticket?.category} sx={{ width: 80 }} />
-                        <Chip size="small" label={ticket?.priority} sx={{ width: 80 }} />
-                    </Box>
-                    <TypographyCustom variant="subtitle2" color="text.secondary">{`${moment(new Date(ticket?.created_at ?? '')).format('D/M/Y')}`}</TypographyCustom>
-
-                    <Box sx={{ marginBlock: 2 }}>
-                        <TypographyCustom variant="body1">{ticket?.description}</TypographyCustom>
-                    </Box>
-
-                    <TypographyCustom variant={'h6'} fontWeight={'bold'}>Actualizaciones</TypographyCustom>
-                    <Divider />
-                    <Box sx={{ overflow: "hidden", height: '300px', maxHeight: '400px', width: "100%", paddingBlock: 2 }}>
-                        <Box
-                            sx={{
-                                height: "250px",
-                                width: "100%",
-                                boxSizing: "content-box",
-                                overflowY: "scroll",
-                                paddingRight: 5
-                            }}
-                        >
-                            <Actualizations actualizations={actualizations} loading={loading} />
-                        </Box>
+                <TypographyCustom variant={'h6'} fontWeight={'bold'}>Actualizaciones</TypographyCustom>
+                <Divider />
+                <Box id="caja" sx={{ overflow: "hidden", height: '300px', maxHeight: '400px', width: "100%", paddingBlock: 2 }}>
+                    <Box
+                        ref={ref}
+                        sx={{
+                            height: "250px",
+                            width: "100%",
+                            boxSizing: "content-box",
+                            overflowY: "scroll",
+                            paddingRight: 5,
+                        }}
+                    >
+                        {!loading && actualizations && (<Actualizations actualizations={actualizations} loading={loading} />)}
                     </Box>
                 </Box>
-            )}
+            </Box>
             {loading && (
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
                     <CircularProgress />
@@ -216,8 +241,9 @@ const TicketInformation: FC<TicketInformationProps> = ({ ticket_id, open, setOpe
                                 <TextFieldCustom value={values.actualization} onChange={handleChange} name="actualization" multiline label="Escribir actualizacion..." />
                             </Box>
                             <Box sx={{ marginTop: 2, display: 'flex', flexFlow: 'row nowrap', gap: 1, alignItems: 'center', justifyContent: 'flex-end' }}>
+
                                 <Box sx={{ width: 300, display: 'flex', flexFlow: 'row nowrap', gap: 2 }}>
-                                    <ButtonCustom style={{ padding: 5 }} size="small" variant="outlined" type="button">Cancelar</ButtonCustom>
+                                    <ButtonCustom style={{ padding: 5 }} size="small" variant="outlined" type="button" onClick={handleClose}>Cancelar</ButtonCustom>
                                     <ButtonCustom style={{ padding: 5 }} size="small" variant="contained" type="submit">Enviar</ButtonCustom>
                                 </Box>
                             </Box>
@@ -343,7 +369,7 @@ export default function DenseMenu({ ticket, changeStatus }: { ticket: ITicket, c
 }
 
 interface ActualizationsProps {
-    actualizations: IActualization[] | null;
+    actualizations: IActualization[];
     loading: boolean;
 }
 const Actualizations: FC<ActualizationsProps> = ({ actualizations, loading }) => {
@@ -353,13 +379,13 @@ const Actualizations: FC<ActualizationsProps> = ({ actualizations, loading }) =>
     </Box>)
 
     return (actualizations && actualizations.length > 0 && actualizations.map((actualization, i: number) => (
-        <Fragment key={actualization.id}>
+        <Fragment key={actualization?.id}>
             <Box sx={{ display: 'flex', flexFlow: 'row nowrap', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 1, mt: 2 }}>
-                <Avatar>{`${actualization.user.names.charAt(0)}${actualization.user.surnames.charAt(0)}`}</Avatar>
+                {actualization && <Avatar>{`${actualization.user.names.charAt(0)}${actualization.user.surnames.charAt(0)}`}</Avatar>}
                 <Box sx={{ display: 'flex', flexFlow: 'column wrap', gap: 1 }}>
-                    <TypographyCustom fontWeight={'bold'}>{`${actualization.user.names} ${actualization.user.surnames}`}</TypographyCustom>
-                    <TypographyCustom textAlign={'justify'}>{actualization.description}</TypographyCustom>
-                    <TypographyCustom variant="subtitle2" fontWeight={'300'} color="text.secondary">{`${moment(new Date(actualization.created_at ?? '')).format('D/M/Y')}`}</TypographyCustom>
+                    <TypographyCustom fontWeight={'bold'}>{`${actualization?.user.names} ${actualization?.user.surnames}`}</TypographyCustom>
+                    <TypographyCustom textAlign={'justify'}>{actualization?.description}</TypographyCustom>
+                    <TypographyCustom variant="subtitle2" fontWeight={'300'} color="text.secondary">{`${moment(new Date(actualization?.created_at ?? '')).format('D/M/Y')}`}</TypographyCustom>
                 </Box>
             </Box>
             {i !== actualizations.length - 1 && (<Box sx={{ width: 20, height: 50, borderRight: '1px solid rgba(150,150,150,1)' }}></Box>)}
