@@ -1,5 +1,5 @@
 import { Dispatch, SetStateAction, useEffect, useState } from "react"
-import { ITicket, ITicketNumbers } from "../interfaces/kanban-type"
+import { ITicket, ITicketNumbers } from "../interfaces/ticket-type"
 import { useUserStore } from "../store/user/UserStore"
 import { getCookieValue } from "../lib/functions";
 export const useTickets: () => {

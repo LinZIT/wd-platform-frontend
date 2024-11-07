@@ -1,8 +1,9 @@
 import { Box, darken, lighten, useTheme } from "@mui/material";
-import { IColumn, ITicket } from "../../interfaces/kanban-type";
+import { ITicket } from "../../interfaces/ticket-type";
 import { ColumnItem } from "./ColumnItem";
 import { SortableContext } from "@dnd-kit/sortable";
 import { useState } from "react";
+import { IColumn } from "../../interfaces/kanban-type";
 
 interface Props {
     columns: IColumn[];

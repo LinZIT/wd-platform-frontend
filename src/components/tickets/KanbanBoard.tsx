@@ -10,10 +10,10 @@ export const KanbanBoard: FC = () => {
     const { tickets, setTickets, numbers, setNumbers } = useTickets();
     const theme = useTheme();
     const columns = [
-        { id: 1, cod: 'abiertos', status: 'Abiertos', color: purple[300], tickets: tickets.filter((ticket) => ticket.status === 'Abierto'), number: numbers['abiertos'] },
-        { id: 2, cod: 'en_proceso', status: 'En Proceso', color: blue[500], tickets: tickets.filter((ticket) => ticket.status === 'En Proceso'), number: numbers['en_proceso'] },
-        { id: 3, cod: 'terminados', status: 'Terminados', color: green[500], tickets: tickets.filter((ticket) => ticket.status === 'Terminado'), number: numbers['terminados'] },
-        { id: 4, cod: 'cancelados', status: 'Cancelados', color: red[500], tickets: tickets.filter((ticket) => ticket.status === 'Cancelado'), number: numbers['cancelados'] },
+        { id: 1, cod: 'abiertos', status: 'Abiertos', color: purple[300], tickets: tickets.filter((ticket) => ticket.status.description === 'Abierto'), number: numbers['abiertos'] },
+        { id: 2, cod: 'en_proceso', status: 'En Proceso', color: blue[500], tickets: tickets.filter((ticket) => ticket.status.description === 'En Proceso'), number: numbers['en_proceso'] },
+        { id: 3, cod: 'terminados', status: 'Terminados', color: green[500], tickets: tickets.filter((ticket) => ticket.status.description === 'Terminado'), number: numbers['terminados'] },
+        { id: 4, cod: 'cancelados', status: 'Cancelados', color: red[500], tickets: tickets.filter((ticket) => ticket.status.description === 'Cancelado'), number: numbers['cancelados'] },
     ]
     const styles = {
         mainContainer: {

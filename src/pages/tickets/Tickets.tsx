@@ -1,20 +1,16 @@
-import { Dispatch, FC, SetStateAction, useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Layout } from "../../components/ui/Layout"
 import { useUserStore } from "../../store/user/UserStore";
 import { DescripcionDeVista } from "../../components/ui/content/DescripcionDeVista";
 import { OptionsList } from "../../components/ui/options/OptionsList";
 import DashboardRounded from "@mui/icons-material/DashboardRounded";
-import { Avatar, AvatarGroup, Box, Button, Chip, darken, Divider, IconButton, lighten, ListItemIcon, ListItemText, Menu, MenuItem, MenuList, Paper, useTheme } from "@mui/material";
-import { SelectCustom, TextFieldCustom, TypographyCustom } from "../../components/custom";
+import { Box, IconButton, MenuItem } from "@mui/material";
+import { SelectCustom, TextFieldCustom } from "../../components/custom";
 import AddRounded from "@mui/icons-material/AddRounded";
 import SearchRounded from "@mui/icons-material/SearchRounded";
 import useEcho from "../../components/useEcho";
-import { ITicket, TicketStatus } from "../../interfaces/kanban-type";
-import { purple, blue, green, red, yellow, grey } from "@mui/material/colors";
-import { useTickets } from "../../hooks/useTickets";
-import { Check, MoreHorizRounded, MoreRounded } from "@mui/icons-material";
-import { motion } from 'framer-motion';
 import { KanbanBoard } from "../../components/tickets/KanbanBoard";
+
 const options = [
     { text: 'Dashboard', icon: <DashboardRounded />, path: '/stats' },
 ]

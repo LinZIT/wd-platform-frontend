@@ -3,10 +3,11 @@ import { Box, lighten, darken } from "@mui/material";
 import { Dispatch, memo, SetStateAction, useMemo, useState } from "react";
 import { useUserStore } from "../../store/user/UserStore";
 import { TypographyCustom } from "../custom";
-import { IColumn, ITicket } from "../../interfaces/kanban-type";
+import { ITicket } from "../../interfaces/ticket-type";
 import { Ticket } from "./Ticket";
 import AddRounded from "@mui/icons-material/AddRounded";
 import ArrowDownward from "@mui/icons-material/ArrowDownward";
+import { IColumn } from "../../interfaces/kanban-type";
 
 interface Props {
     column: IColumn;
