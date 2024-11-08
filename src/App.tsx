@@ -9,6 +9,7 @@ import { themeDark, themeLight } from './common/theme';
 import { Profile } from './pages/profile/Profile';
 import { Tickets } from './pages/tickets/Tickets';
 import { TicketView } from './pages/tickets/TicketView';
+import { CreateNewTicket } from './pages/tickets/CreateNewTicket';
 const useGetTheme = () => {
   const user = useUserStore((state) => state.user);
   const [theme, setTheme] = useState<Theme>(themeLight)
@@ -32,6 +33,7 @@ function App() {
           <Route path='/dashboard' element={<Dashboard />} />
           <Route path='/profile' element={<Profile />} />
           <Route path='/tickets' element={<Tickets />} />
+          <Route path='/ticket/new' element={<CreateNewTicket />} />
           <Route path='/ticket/:id' element={<TicketView />} />
         </Routes>
       </BrowserRouter>

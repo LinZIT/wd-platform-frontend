@@ -9,6 +9,7 @@ import { getCookieValue } from "../../lib/functions";
 import { useUserStore } from "../../store/user/UserStore";
 import { TypographyCustom, TextFieldCustom, ButtonCustom } from "../custom";
 import { Actualizations } from "./Actualizations";
+import { red, blue, yellow, grey, purple } from "@mui/material/colors";
 
 const initialValues = {
     actualization: '',
@@ -28,7 +29,6 @@ export const TicketInformation: FC<Props> = ({ ticket_id, open, setOpen }) => {
     const [actualizations, setActualizations] = useState<IActualization[] | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const ref = useRef();
-
     useEffect(() => {
         if (open) {
             getTicketInformation();
@@ -74,6 +74,7 @@ export const TicketInformation: FC<Props> = ({ ticket_id, open, setOpen }) => {
     }
     const handleClose = () => {
         setOpen(false);
+        setTicket(null);
     }
 
     const onSubmit = async (values: InitialValues, resetForm: (nextState?: Partial<FormikState<InitialValues>> | undefined) => void) => {
@@ -121,9 +122,20 @@ export const TicketInformation: FC<Props> = ({ ticket_id, open, setOpen }) => {
                 <TypographyCustom fontWeight="200" variant="subtitle2">{`Ticket #${ticket?.id}`}</TypographyCustom>
                 <TypographyCustom variant='h6'>{`${ticket?.user.names} ${ticket?.user.surnames}`}</TypographyCustom>
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: 1, marginBlock: 2 }}>
-                    <Chip size="small" label={ticket?.department.description} sx={{ width: 80 }} />
-                    <Chip size="small" label={ticket?.category} sx={{ width: 80 }} />
-                    <Chip size="small" label={ticket?.priority} sx={{ width: 80 }} />
+                    <Chip size="small" label={ticket?.department.description} sx={{ width: 80, background: purple[500] }} />
+                    <Chip size="small" label={ticket?.ticket_category?.description} sx={{ width: 80, background: ticket?.ticket_category?.color, color: (theme) => theme.palette.getContrastText(ticket?.ticket_category?.color ?? '#C0EA0F') }} />
+                    <Chip size="small" label={ticket?.priority}
+                        sx={{
+                            width: 80,
+                            background: ticket?.priority === 'Alta'
+                                ? red[500]
+                                : ticket?.priority === 'Media'
+                                    ? blue[500]
+                                    : ticket?.priority === 'Critica'
+                                        ? yellow[500]
+                                        : 'default',
+                            color: (theme) => theme.palette.getContrastText(ticket?.priority === 'Alta' ? red[500] : ticket?.priority === 'Media' ? blue[500] : ticket?.priority === 'Critica' ? yellow[500] : theme.palette.background.default) ?? '#FFFFFF'
+                        }} />
                 </Box>
                 <TypographyCustom variant="subtitle2" color="text.secondary">{`${moment(new Date(ticket?.created_at ?? '')).format('D/M/Y')}`}</TypographyCustom>
 

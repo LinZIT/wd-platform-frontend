@@ -92,19 +92,19 @@ export const ThemeChanger = () => {
     const [changing, setChanging] = useState<boolean>(true);
 
     const changeDBTheme = async (theme: string) => {
+        setChanging(true);
         const result = await changeTheme(theme);
         if (result.status) {
             toast.success('Se cambio el color');
-            setChanging(false);
+            // changeLocalTheme(theme);
+            setThemeSelected(theme === 'dark' ? true : false);
         } else {
             toast.error(result.message);
-            setChanging(false);
         }
+        setChanging(false);
     }
 
     const changeLocalTheme = (theme: string) => {
-        setChanging(true);
-        setThemeSelected(theme === 'dark' ? true : false);
     }
 
     useEffect(() => {
@@ -118,7 +118,6 @@ export const ThemeChanger = () => {
                 disabled={changing}
                 onChange={
                     (e: any) => {
-                        changeLocalTheme(e.target.checked ? 'dark' : 'light');
                         changeDBTheme(e.target.checked ? 'dark' : 'light');
                     }
                 } />

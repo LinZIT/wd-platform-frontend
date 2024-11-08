@@ -4,7 +4,7 @@ import { purple, blue, green, red, grey, yellow } from "@mui/material/colors";
 import { useState } from "react";
 import { ITicket, TicketStatus } from "../../interfaces/ticket-type";
 
-export default function DenseMenu({ ticket, changeStatus }: { ticket: ITicket, changeStatus: (status: TicketStatus) => void }) {
+export default function DenseMenu({ ticket, changeStatus, changePriority }: { ticket: ITicket, changeStatus: (status: TicketStatus) => void, changePriority: (priority: 'Alta' | 'Media' | 'Baja' | 'Critica') => void }) {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const open = Boolean(anchorEl);
     const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -104,7 +104,7 @@ export default function DenseMenu({ ticket, changeStatus }: { ticket: ITicket, c
                 <Divider textAlign="left">
                     <Chip label="Prioridad" size="small" />
                 </Divider>
-                {priorities.map((priority) => <MenuItem key={priority.id}>{priority.description === ticket.priority ? <>
+                {priorities.map((priority) => <MenuItem key={priority.id} onClick={() => changePriority(priority.description as 'Alta' | 'Media' | 'Baja' | 'Critica')}>{priority.description === ticket.priority ? <>
                     <ListItemIcon>
                         <Check sx={{ color: priority.color }} />
                     </ListItemIcon>

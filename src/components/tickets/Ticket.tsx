@@ -43,15 +43,37 @@ export const Ticket: FC<Props> = ({ ticket, setTickets }) => {
             console.log({ error })
         }
     }
+    const changePriority = async (priority: 'Alta' | 'Media' | 'Baja' | 'Critica') => {
+        const url = `${import.meta.env.VITE_BACKEND_API_URL}/ticket/${ticket.id}/priority`;
+        const body = new URLSearchParams({ priority });
+        const options = {
+            method: 'PUT',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Authorization': `Bearer ${user?.token}`
+            },
+            body
+        }
+
+        try {
+            const response = await fetch(url, options);
+
+            const { data } = await response.json();
+            setTickets((tickets) => {
+                const except = tickets.filter((mticket) => mticket.id !== ticket.id);
+                const newTickets: ITicket[] = [...except, data];
+                return newTickets;
+            });
+        } catch (error) {
+            console.log({ error })
+        }
+    }
     const handleOpen = () => {
         setOpen(true);
     }
     return (
-        <motion.div variants={{
-            hidden: {
-                opacity: 0
-            }, show: { opacity: 1 }
-        }}>
+        <motion.div variants={{ hidden: { opacity: 0 }, show: { opacity: 1 } }}>
             <Box sx={{
                 position: 'relative',
             }}>
@@ -84,7 +106,7 @@ export const Ticket: FC<Props> = ({ ticket, setTickets }) => {
                         </AvatarGroup>
                     </Box>
                 </Box>
-                <DenseMenu ticket={ticket} changeStatus={changeStatus} />
+                <DenseMenu ticket={ticket} changeStatus={changeStatus} changePriority={changePriority} />
             </Box>
             <TicketInformation ticket_id={ticket.id} open={open} setOpen={setOpen} />
         </motion.div>

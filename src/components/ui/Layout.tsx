@@ -15,10 +15,9 @@ type Props = {
 export const Layout: FC<Props> = ({ children, chat = true, container = true }) => {
     const styles = {
         body: {
-            width: '100%',
             margin: 'auto',
             minHeight: '100vh',
-            maxheight: '100%',
+            maxHeight: '100%',
         }
     }
 
@@ -26,12 +25,12 @@ export const Layout: FC<Props> = ({ children, chat = true, container = true }) =
         <Box>
             <NavBar />
             <Toolbar />
-            {container ? (
-                <Container sx={styles.body}>
+            {!container ? (
+                <Box sx={styles.body}>
                     {children}
-                </Container>
+                </Box>
             ) : (
-                <Box sx={{ ...styles.body, width: '90%' }}>
+                <Box sx={{ ...styles.body, width: '80%' }}>
                     {children}
                 </Box>
             )}

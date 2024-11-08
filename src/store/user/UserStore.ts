@@ -181,7 +181,6 @@ export const useUserStore = create<State>((set, get) => ({
         }
     },
     changeTheme: async (theme: string) => {
-        set({ user: { ...get().user, theme } })
         const url = `${import.meta.env.VITE_BACKEND_API_URL}/user/${get().user.id}/change/theme`
         const body = new URLSearchParams({
             'theme': theme,
@@ -201,6 +200,7 @@ export const useUserStore = create<State>((set, get) => ({
                 case 200:
                     const { message, status } = await response.json();
                     console.log({ message, status });
+                    set({ user: { ...get().user, theme } })
                     return { status, message }
                 default:
                     return { status: false, message: "Ocurrio un error inesperado" }

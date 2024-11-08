@@ -32,7 +32,7 @@ export const Tickets = () => {
 
     }, []);
     return (
-        <Layout container={false}>
+        <Layout>
             <Box sx={{ display: 'flex', flexFlow: 'row wrap', justifyContent: 'space-between', alignItems: 'center', gap: 4 }}>
                 <DescripcionDeVista title={"Tickets"} description={"Aquí encontraras todas las tus solicitudes de ayuda y comentarios de los clientes"} />
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexGrow: 0.5, gap: 2 }}>
