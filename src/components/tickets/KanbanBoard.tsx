@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, useEffect } from "react";
 import { useTheme, darken, lighten, Box } from "@mui/material";
 import { purple, blue, green, red } from "@mui/material/colors";
 import { useTickets } from "../../hooks/useTickets";
@@ -9,6 +9,7 @@ import { motion } from "framer-motion";
 export const KanbanBoard: FC = () => {
     const { tickets, setTickets, numbers, setNumbers } = useTickets();
     const theme = useTheme();
+
     const columns = [
         { id: 1, cod: 'abiertos', status: 'Abiertos', color: purple[300], tickets: tickets.filter((ticket) => ticket.status.description === 'Abierto'), number: numbers['abiertos'] },
         { id: 2, cod: 'en_proceso', status: 'En Proceso', color: blue[500], tickets: tickets.filter((ticket) => ticket.status.description === 'En Proceso'), number: numbers['en_proceso'] },
@@ -41,9 +42,7 @@ export const KanbanBoard: FC = () => {
         <Box sx={styles.mainContainer}>
             <Box sx={styles.scrollContainer}>
                 {columns.map((column) => <Box key={column.id}>
-                    <Box
-                        sx={{ border: '1px solid rgba(150,150,150,0.5)', borderRadius: 4, minWidth: 400, maxWidth: 400, height: '100%', display: 'flex', flexFlow: 'column wrap' }}
-                    >
+                    <Box sx={{ border: '1px solid rgba(150,150,150,0.5)', borderRadius: 4, minWidth: 400, maxWidth: 400, height: '100%', display: 'flex', flexFlow: 'column wrap' }}>
                         <Box
                             sx={{
                                 p: 1,
@@ -59,21 +58,8 @@ export const KanbanBoard: FC = () => {
                             <TypographyCustom variant="overline">{column.status}</TypographyCustom>
                         </Box>
                         <Box sx={{ flexGrow: 1, minHeight: 20, borderRadius: 4, borderTopRightRadius: 0, borderTopLeftRadius: 0 }} >
-
-                            <motion.section
-                                initial="hidden"
-                                animate="show"
-                                variants={{
-                                    hidden: { opacity: 0 },
-                                    show: {
-                                        opacity: 1, transition: {
-                                            staggerChildren: 0.25
-                                        }
-                                    }
-                                }}>
-                                {column.tickets.map((ticket) => (
-                                    <Ticket key={ticket.id} ticket={ticket} setTickets={setTickets} />
-                                ))}
+                            <motion.section initial="hidden" animate="show" variants={{ hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.25 } } }}>
+                                {column.tickets.map((ticket) => (<Ticket key={ticket.id} ticket={ticket} setTickets={setTickets} />))}
                             </motion.section>
                         </Box>
                     </Box >

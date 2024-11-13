@@ -1,16 +1,16 @@
-import { Avatar, Box, CircularProgress, Divider, IconButton, Menu, MenuItem, Paper, Tooltip } from "@mui/material";
+import Paper from "@mui/material/Paper";
+import CircularProgress from "@mui/material/CircularProgress";
 import Grid from "@mui/material/Grid2";
 import { DescripcionDeVista } from "../../components/ui/content/DescripcionDeVista";
 import { Layout } from "../../components/ui/Layout";
 import { useUserStore } from "../../store/user/UserStore"
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { MobileInfo, PCInfo } from "../../components/profile/info";
 import { PersonalInformation } from "../../components/profile/info/PersonalInformation";
 import { PasswordChanger } from "../../components/profile";
 import { usePassStore } from "../../store/password/PasswordStore";
 
 export const Profile = () => {
-    const [changePassword, setChangePassword] = useState<boolean>(false);
     const user = useUserStore((state) => state.user);
     const validateToken = useUserStore((state) => state.validateToken);
     const pass = usePassStore((state) => state.pass);

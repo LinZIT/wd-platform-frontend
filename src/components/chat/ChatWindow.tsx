@@ -5,11 +5,12 @@ import { FC, useEffect, useRef, useState } from 'react'
 import Grid from '@mui/material/Grid2';
 import { useUserStore } from '../../store/user/UserStore';
 import useEcho from '../useEcho';
-import { UnreadMessage, useMessagesStore } from '../../store/messages/MessagesStore';
+import { useMessagesStore } from '../../store/messages/MessagesStore';
 import { MessageBubble } from './MessageBubble';
 import { Form, Formik, FormikState } from 'formik';
-import { Bounce, ToastContainer } from 'react-toastify';
+import { Bounce, toast, ToastContainer } from 'react-toastify';
 import { TextFieldCustom } from '../custom';
+import { request } from '../../common/request';
 export interface IChat {
     id: number;
     user_id: number;
@@ -80,22 +81,18 @@ export const ChatWindow: FC<Props> = ({ usuario }) => {
         setIsTyping(false);
     }
     const getMessages = async () => {
-        const url = `${import.meta.env.VITE_BACKEND_API_URL}/get/chat/${usuario.id}`;
-        const options = {
-            method: 'GET',
-            headers: {
-                // 'Content-Type': 'application/x-www-form-urlencoded',
-                'Authorization': `Bearer ${user?.token}`
-            },
-        }
-        try {
-            const response = await fetch(url, options);
-            const { data } = await response.json();
-            setChat(data)
-            scrollTo(ref)
-            setLoading(false);
-        } catch (error) {
-            console.log(error)
+        const { status, response, err }: { status: number, response: any, err: any } = await request(`/get/chat/${usuario.id}`, 'GET');
+        switch (status) {
+            case 200:
+                const { data } = await response.json();
+                setChat(data)
+                scrollTo(ref)
+                setLoading(false);
+                break;
+            default:
+                console.log(err)
+                toast.error('Ocurrio un error inesperado');
+                break;
         }
     }
     const scrollTo = (ref: any) => {
@@ -105,37 +102,21 @@ export const ChatWindow: FC<Props> = ({ usuario }) => {
             }, 500)
         }
     }
-    const sendMessage = async (values: {
-        message: string;
-    }, resetForm: (nextState?: Partial<FormikState<{
-        message: string;
-    }>> | undefined) => void) => {
-        const url = `${import.meta.env.VITE_BACKEND_API_URL}/send-message`
-        const body = new URLSearchParams()
-        body.append('message', String(values.message))
-        body.append('user_id', String(usuario.id))
-        body.append('from', String(user.id))
-        const options = {
-            method: 'POST',
-            headers: {
-                // 'Accept': 'application/json',
-                // 'Content-Type': 'application/x-www-form-urlencoded',
-                'Authorization': `Bearer ${user?.token}`,
-            },
-            body
-        }
-        try {
-            const response = await fetch(url, options);
-            const data = await response.json();
-            setChat((prevChat) => {
-                const newMessages: IChat[] = [...prevChat, { id: prevChat[prevChat.length - 1].id + 1, created_at: String(new Date()), message: values.message, from: user.id, user_id: usuario.id }]
-                return newMessages
-            })
-            scrollTo(ref);
-            resetForm();
-        } catch (error) {
-            console.log({ usuario, user });
-
+    const sendMessage = async (values: { message: string; }, resetForm: (nextState?: Partial<FormikState<{ message: string; }>> | undefined) => void) => {
+        const body = new URLSearchParams({ 'message': String(values.message), 'user_id': String(usuario.id), 'from': String(user.id) })
+        const { status, err }: { status: number, err: any } = await request('/send-message', 'POST', body);
+        switch (status) {
+            case 200:
+                setChat((prevChat) => {
+                    const newMessages: IChat[] = [...prevChat, { id: prevChat[prevChat.length - 1].id + 1, created_at: String(new Date()), message: values.message, from: user.id, user_id: usuario.id }]
+                    return newMessages
+                })
+                scrollTo(ref);
+                resetForm();
+                break;
+            default:
+                console.log({ err });
+                toast.error('Ocurrio un error inesperado');
         }
     }
     return (

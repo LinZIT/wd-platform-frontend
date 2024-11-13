@@ -1,18 +1,21 @@
-import { Layout } from '../components/ui/Layout'
-import Box from '@mui/material/Box'
-import { CircularProgress, darken, lighten } from '@mui/material'
-// import { useEffect } from 'react';
-import { useUserStore } from '../store/user/UserStore';
 import { useEffect } from 'react';
-import { DescripcionDeVista } from '../components/ui/content/DescripcionDeVista';
-import moment from 'moment';
-import { OptionsList } from '../components/ui/options';
+import { useNavigate } from 'react-router-dom';
+import { Layout } from '../components/ui/Layout'
+
+import Box from '@mui/material/Box'
+import CircularProgress from '@mui/material/CircularProgress'
+import { darken } from '@mui/material'
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumberRounded';
-import { TypographyCustom } from '../components/custom';
 import AddRounded from '@mui/icons-material/AddRounded';
 import { grey } from '@mui/material/colors';
-import { useNavigate } from 'react-router-dom';
 
+import { OptionsList } from '../components/ui/options';
+import { TypographyCustom } from '../components/custom';
+import { DescripcionDeVista } from '../components/ui/content/DescripcionDeVista';
+
+import { useUserStore } from '../store/user/UserStore';
+
+import moment from 'moment';
 const options = [
     { text: 'Tickets', icon: <ConfirmationNumberIcon />, path: '/tickets' },
 ]

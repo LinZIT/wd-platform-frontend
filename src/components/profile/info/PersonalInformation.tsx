@@ -1,4 +1,4 @@
-import { Box } from '@mui/material'
+import Box from '@mui/material/Box'
 import Grid from '@mui/material/Grid2'
 import { TypographyCustom } from '../../custom'
 import { useUserStore } from '../../../store/user/UserStore';

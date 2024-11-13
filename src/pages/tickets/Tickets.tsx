@@ -1,15 +1,20 @@
 import { useEffect } from "react";
 import { Layout } from "../../components/ui/Layout"
 import { useUserStore } from "../../store/user/UserStore";
-import { DescripcionDeVista } from "../../components/ui/content/DescripcionDeVista";
-import { OptionsList } from "../../components/ui/options/OptionsList";
-import DashboardRounded from "@mui/icons-material/DashboardRounded";
-import { Box, IconButton, MenuItem } from "@mui/material";
-import { SelectCustom, TextFieldCustom } from "../../components/custom";
+import useEcho from "../../components/useEcho";
+
+import MenuItem from "@mui/material/MenuItem";
+import IconButton from "@mui/material/IconButton";
+import Box from "@mui/material/Box";
 import AddRounded from "@mui/icons-material/AddRounded";
 import SearchRounded from "@mui/icons-material/SearchRounded";
-import useEcho from "../../components/useEcho";
+import DashboardRounded from "@mui/icons-material/DashboardRounded";
+
+import { SelectCustom, TextFieldCustom } from "../../components/custom";
+import { DescripcionDeVista } from "../../components/ui/content/DescripcionDeVista";
+import { OptionsList } from "../../components/ui/options/OptionsList";
 import { KanbanBoard } from "../../components/tickets/KanbanBoard";
+import { useTicketCategoryStore } from "../../store/ticket_categories/TicketCategoryStore";
 
 const options = [
     { text: 'Dashboard', icon: <DashboardRounded />, path: '/stats' },
@@ -19,8 +24,10 @@ export const Tickets = () => {
     const validateToken = useUserStore((state) => state.validateToken);
     const user = useUserStore((state) => state.user);
     const echo = useEcho();
+    const getCategories = useTicketCategoryStore((state) => state.getCategories);
     useEffect(() => {
         validateToken();
+        getCategories();
         if (user) {
             if (echo) {
                 echo.join(`status_online.${user?.isOnline}`)

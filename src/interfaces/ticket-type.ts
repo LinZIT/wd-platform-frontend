@@ -38,3 +38,10 @@ export interface ITicket {
 export type TicketStatus = 'Abierto' | 'En Proceso' | 'Terminado' | 'Cancelado'
 
 export type ITicketNumbers = { abiertos: number, en_proceso: number, terminados: number, cancelados: number }
+export interface ITicketCategory {
+    id: number;
+    description: string;
+    color: string;
+    created_at: string;
+    updated_at: string;
+}

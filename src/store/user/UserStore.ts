@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { createCookie, deleteCookie, getCookieValue } from '../../lib/functions';
 import { setBearerToken } from '../../lib/axios';
 import { darken, lighten } from '@mui/material';
+import { request } from '../../common/request';
 export interface IUser {
     id: number;
     names: string;
@@ -86,17 +87,14 @@ export const useUserStore = create<State>((set, get) => ({
     },
     getChatWindow: () => get().user.chatWindowOpen,
     login: async (email: string, password: string) => {
-        const url = `${import.meta.env.VITE_BACKEND_URL}/api/login`
+        const url = `${import.meta.env.VITE_BACKEND_API_URL}/login`
         const options = {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/x-www-form-urlencoded',
             },
-            body: new URLSearchParams({
-                'email': email,
-                'password': password,
-            }),
+            body: new URLSearchParams({ email, password })
         }
         try {
             const response = await fetch(url, options);
@@ -116,7 +114,6 @@ export const useUserStore = create<State>((set, get) => ({
                     return { status: false, message: 'Datos incorrectos' }
                 default:
                     return { status: false, message: 'Ocurrio un error interno del servidor, intente mas tarde' }
-
             }
         } catch (error) {
             console.log({ error });
@@ -124,121 +121,64 @@ export const useUserStore = create<State>((set, get) => ({
         }
     },
     logout: async () => {
-        const url = `${import.meta.env.VITE_BACKEND_URL}/api/logout`
-        const options = {
-            method: 'GET',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'Authorization': `Bearer ${get().user.token}`,
-            },
-        }
-        try {
-            const response = await fetch(url, options)
-            console.log({ response });
-            deleteCookie('token');
-            set({ user: initialState });
-            return true;
-        } catch (error) {
-            console.log({ error });
-            return false;
+        const { status }: { status: number } = await request(`/logout`, 'GET');
+        switch (status) {
+            case 200:
+                deleteCookie('token');
+                set({ user: initialState });
+                return true;
+            default:
+                return false;
         }
     },
     validateToken: async () => {
         const token = getCookieValue('token');
-
         if (!token) return { status: false, message: 'No hay token' }
-
-        const url = `${import.meta.env.VITE_BACKEND_URL}/api/user/data`;
-        const options = {
-            method: 'GET',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'Authorization': `Bearer ${token}`,
-            }
-        }
-        try {
-            const response = await fetch(url, options);
-            switch (response.status) {
-                case 200:
-                    const { user }: { user: IUser } = await response.json();
-                    // console.log('SE COLOCA EL TOKEN EN LA VALIDACION DEL MISMO', user.token)
-                    setBearerToken(user.token ?? '')
-                    user.logged = true;
-                    user.isOnline = 1;
-                    user.lighten = lighten(user.color, 0.3);
-                    user.darken = darken(user.color, 0.3);
-                    set({ user })
-                    return { status: true, message: 'Token validado' }
-                case 401:
-                    return { status: false, message: 'Token invalido' }
-                default:
-                    return { status: false, message: 'Token invalido' }
-            }
-        } catch (error) {
-            return { status: false, message: 'Token invalido' }
-        }
+        const { status, response, err }: { status: number, response: any, err: any } = await request(`/user/data`, 'GET');
+        switch (status) {
+            case 200:
+                const { user }: { user: IUser } = await response.json();
+                setBearerToken(user.token ?? '')
+                user.logged = true;
+                user.isOnline = 1;
+                user.lighten = lighten(user.color, 0.3);
+                user.darken = darken(user.color, 0.3);
+                set({ user })
+                return { status: true, message: 'Token validado' }
+            case 401:
+                console.log({ err });
+                return { status: false, message: 'Token invalido' }
+            default:
+                console.log({ err });
+                return { status: false, message: 'Token invalido' }
+        };
     },
     changeTheme: async (theme: string) => {
-        const url = `${import.meta.env.VITE_BACKEND_API_URL}/user/${get().user.id}/change/theme`
-        const body = new URLSearchParams({
-            'theme': theme,
-        });
-        const options = {
-            method: 'PUT',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'Authorization': `Bearer ${get().user.token}`,
-            },
-            body
-        }
-        try {
-            const response = await fetch(url, options);
-            switch (response.status) {
-                case 200:
-                    const { message, status } = await response.json();
-                    console.log({ message, status });
-                    set({ user: { ...get().user, theme } })
-                    return { status, message }
-                default:
-                    return { status: false, message: "Ocurrio un error inesperado" }
-            }
-        } catch (error) {
-            console.log(error)
-            return { status: false, message: "No se logro conectar con el servidor" }
+        const body = new URLSearchParams({ theme });
+        const { status, response, err }: { status: number, response: any, err: any } = await request(`/user/${get().user.id}/change/theme`, 'PUT', body)
+        switch (status) {
+            case 200:
+                const { message, status } = await response.json();
+                console.log({ message, status });
+                set({ user: { ...get().user, theme } })
+                return { status, message }
+            default:
+                console.log({ err });
+                return { status: false, message: "Ocurrio un error inesperado" }
         }
     },
     changeColor: async (color: string) => {
-        set({ user: { ...get().user, color, lighten: lighten(color, 0.3), darken: darken(color, 0.3), } })
-        const url = `${import.meta.env.VITE_BACKEND_API_URL}/user/${get().user.id}/change/color`
-        const body = new URLSearchParams({
-            'color': color,
-        });
-        const options = {
-            method: 'PUT',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'Authorization': `Bearer ${get().user.token}`,
-            },
-            body
-        }
-        try {
-            const response = await fetch(url, options);
-            switch (response.status) {
-                case 200:
-                    const { message, status } = await response.json();
-                    console.log({ message, status });
-                    return { status, message }
-                default:
-                    return { status: false, message: "Ocurrio un error inesperado" }
-            }
-        } catch (error) {
-            console.log(error)
-            return { status: false, message: "No se logro conectar con el servidor" }
+        const body = new URLSearchParams({ color });
+        const { status, response, err }: { status: number, response: any, err: any } = await request(`/user/${get().user.id}/change/color`, 'PUT', body);
+        switch (status) {
+            case 200:
+                const { message, status } = await response.json();
+                console.log({ message, status });
+                set({ user: { ...get().user, color, lighten: lighten(color, 0.3), darken: darken(color, 0.3), } })
+                return { status, message }
+            default:
+                console.log({ err });
+                return { status: false, message: "Ocurrio un error inesperado" }
         }
     },
-
 }));

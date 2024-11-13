@@ -1,12 +1,9 @@
-import { FC, ReactNode, useContext } from 'react';
+import { FC, ReactNode } from 'react';
 import Box from '@mui/material/Box';
 import { Typography, useTheme } from '@mui/material';
 import IconButton from '@mui/material/IconButton';
-// import { TypographyCustom } from '../../custom/TypographyCustom';
 import { To, useNavigate } from 'react-router-dom';
-import Button from '@mui/material/Button';
 import NavigateBeforeRounded from '@mui/icons-material/NavigateBeforeRounded';
-import HomeRounded from '@mui/icons-material/HomeRounded';
 import { useUserStore } from '../../../store/user/UserStore';
 
 type Props = {

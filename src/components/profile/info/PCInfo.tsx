@@ -1,4 +1,4 @@
-import { Box } from '@mui/material'
+import Box from '@mui/material/Box'
 import { TypographyCustom, ButtonCustom } from '../../custom'
 import { AvatarCustom } from '../../custom/AvatarCustom'
 import { ColorPicker } from '../ColorPicker'
