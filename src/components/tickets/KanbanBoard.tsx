@@ -1,5 +1,5 @@
 import { FC, useEffect } from "react";
-import { useTheme, darken, lighten, Box } from "@mui/material";
+import { useTheme, darken, lighten, Box, Skeleton } from "@mui/material";
 import { purple, blue, green, red } from "@mui/material/colors";
 import { useTickets } from "../../hooks/useTickets";
 import { TypographyCustom } from "../custom";
@@ -7,7 +7,7 @@ import { Ticket } from "./Ticket";
 import { motion } from "framer-motion";
 
 export const KanbanBoard: FC = () => {
-    const { tickets, setTickets, numbers, setNumbers } = useTickets();
+    const { tickets, setTickets, numbers, setNumbers, loading } = useTickets();
     const theme = useTheme();
 
     const columns = [
@@ -57,7 +57,17 @@ export const KanbanBoard: FC = () => {
                             }}>
                             <TypographyCustom variant="overline">{column.status}</TypographyCustom>
                         </Box>
-                        <Box sx={{ flexGrow: 1, minHeight: 20, borderRadius: 4, borderTopRightRadius: 0, borderTopLeftRadius: 0 }} >
+                        <Box sx={{ flexGrow: 1, minHeight: 210, borderRadius: 4, borderTopRightRadius: 0, borderTopLeftRadius: 0 }} >
+                            {loading && tickets.length === 0 && (
+                                <>
+                                    <Box sx={{ width: 300, height: 200, p: 2, mb: 1 }}>
+                                        <Skeleton variant="rounded" animation="wave" width={370} height={180} />
+                                    </Box>
+                                    <Box sx={{ width: 300, height: 200, p: 2, mb: 1 }}>
+                                        <Skeleton variant="rounded" animation="wave" width={370} height={180} />
+                                    </Box>
+                                </>
+                            )}
                             <motion.section initial="hidden" animate="show" variants={{ hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.25 } } }}>
                                 {column.tickets.map((ticket) => (<Ticket key={ticket.id} ticket={ticket} setTickets={setTickets} />))}
                             </motion.section>

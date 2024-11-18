@@ -1,4 +1,4 @@
-import { Box, Divider, AvatarGroup, Avatar, Dialog, IconButton, AppBar, Toolbar, } from '@mui/material';
+import { Box, Divider, AvatarGroup, Avatar, Dialog, IconButton, AppBar, Toolbar, Tooltip, } from '@mui/material';
 import { motion } from "framer-motion";
 import { Dispatch, SetStateAction, FC, useState } from "react";
 import { ITicket, TicketStatus } from "../../interfaces/ticket-type";
@@ -103,10 +103,15 @@ export const Ticket: FC<Props> = ({ ticket, setTickets }) => {
                         <Divider sx={{ marginBlock: 1 }} />
                     </Box>
                     <Box sx={{ cursor: 'default', display: 'flex', flexFlow: 'row wrap', justifyContent: 'flex-start', alignItems: 'center', gap: 1 }}>
-                        <TicketAssignmentDialog />
                         <AvatarGroup>
-                            <Avatar sx={{ width: 24, height: 24, fontSize: 12, background: user.color }}>JL</Avatar>
-                            <Avatar sx={{ width: 24, height: 24, fontSize: 12, background: '#394775' }}>NB</Avatar>
+                            <TicketAssignmentDialog />
+                            <Tooltip title={"Jose Linares"} >
+
+                                <Avatar sx={{ width: 24, height: 24, fontSize: 12, background: user.color }}>JL</Avatar>
+                            </Tooltip>
+                            <Tooltip title={"Neftali Bentancur"}>
+                                <Avatar sx={{ width: 24, height: 24, fontSize: 12, background: '#394775' }}>NB</Avatar>
+                            </Tooltip>
                         </AvatarGroup>
                     </Box>
                 </Box>
@@ -128,7 +133,7 @@ const TicketAssignmentDialog = () => {
     }
     return (
         <>
-            <IconButton onClick={handleOpen} sx={{ cursor: 'pointer', zIndex: 9999, bgcolor: 'transparent', width: 24, height: 24, fontSize: 12, border: '1px solid', borderColor: blue[800] }}><AddRounded fontSize='small' sx={{ color: blue[800] }} /></IconButton>
+            <Avatar onClick={handleOpen} sx={{ cursor: 'pointer', width: 24, height: 24, fontSize: 12 }}><AddRounded fontSize='small' /></Avatar>
             <Dialog fullScreen open={open} onClose={handleClose}>
                 <AppBar elevation={0}>
                     <Toolbar>

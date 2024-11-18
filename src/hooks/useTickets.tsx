@@ -12,9 +12,11 @@ export const useTickets: () => {
         cancelados: number;
     };
     setNumbers: Dispatch<SetStateAction<ITicketNumbers>>;
+    loading: boolean;
 } = () => {
     const [tickets, setTickets] = useState<ITicket[]>([]);
     const [numbers, setNumbers] = useState<ITicketNumbers>({ abiertos: 0, en_proceso: 0, terminados: 0, cancelados: 0 });
+    const [loading, setLoading] = useState<boolean>(false);
 
     const user = useUserStore((state) => state.user);
 
@@ -23,6 +25,7 @@ export const useTickets: () => {
     }, [])
 
     const getTickets = async () => {
+        setLoading(true);
         const url = `${import.meta.env.VITE_BACKEND_API_URL}/tickets`;
         const options = {
             method: 'GET',
@@ -43,7 +46,9 @@ export const useTickets: () => {
             setNumbers(data.numbers);
         } catch (error) {
             console.log(error);
+        } finally {
+            setLoading(false);
         }
     }
-    return { tickets, setTickets, numbers, setNumbers }
+    return { tickets, setTickets, numbers, setNumbers, loading }
 }
