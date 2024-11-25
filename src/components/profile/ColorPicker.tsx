@@ -2,6 +2,7 @@ import { FC, useState } from 'react'
 import { Box, IconButton } from '@mui/material'
 import { useUserStore } from '../../store/user/UserStore';
 import { toast } from 'react-toastify';
+import { amber, blue, pink, purple, red, yellow } from '@mui/material/colors';
 export const ColorPicker: FC = () => {
     const [changing, setChanging] = useState<boolean>(false);
     const changeColor = useUserStore((state) => state.changeColor);
@@ -20,6 +21,12 @@ export const ColorPicker: FC = () => {
     const colors = [
         { color: '#394775' },
         { color: '#C0EA0F' },
+        { color: blue[500] },
+        { color: red[500] },
+        { color: yellow[500] },
+        { color: amber[500] },
+        { color: purple[500] },
+        { color: pink[500] },
     ]
 
     return (

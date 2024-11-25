@@ -18,7 +18,7 @@ export const Actualizations: FC<ActualizationsProps> = ({ actualizations, loadin
     return (actualizations && actualizations.length > 0 && actualizations.map((actualization, i: number) => (
         <Fragment key={actualization?.id}>
             <Box sx={{ display: 'flex', flexFlow: 'row nowrap', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 1, mt: 2 }}>
-                {actualization && <Avatar>{`${actualization.user.names.charAt(0)}${actualization.user.surnames.charAt(0)}`}</Avatar>}
+                {actualization && <Avatar sx={{ bgcolor: actualization.user.color, color: (theme) => theme.palette.getContrastText(actualization.user.color) }}>{`${actualization.user.names.charAt(0)}${actualization.user.surnames.charAt(0)}`}</Avatar>}
                 <Box sx={{ display: 'flex', flexFlow: 'column wrap', gap: 1 }}>
                     <TypographyCustom fontWeight={'bold'}>{`${actualization?.user.names} ${actualization?.user.surnames}`}</TypographyCustom>
                     <TypographyCustom textAlign={'justify'}>{actualization?.description}</TypographyCustom>

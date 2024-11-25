@@ -26,6 +26,7 @@ export interface ITicket {
     };
     priority: string;
     number_of_actualizations: number;
+    assignments: Assignment[],
     created_at: string;
     updated_at: string;
     status: {
@@ -44,4 +45,9 @@ export interface ITicketCategory {
     color: string;
     created_at: string;
     updated_at: string;
+}
+
+export type Assignment = {
+    id: number;
+    user: IUser;
 }
