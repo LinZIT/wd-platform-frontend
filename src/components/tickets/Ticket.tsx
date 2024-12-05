@@ -10,17 +10,25 @@ import { TicketInformation } from ".";
 import { AddRounded } from '@mui/icons-material';
 import { request } from '../../common/request';
 import { toast } from 'react-toastify';
+import { useOpenTicketStore } from '../../store/tickets/OpenTicketsStore';
+import { useCancelledTicketStore } from '../../store/tickets/CancelledTicketsStore';
+import { useFinishedTicketStore } from '../../store/tickets/FinishedTicketsStore';
+import { useInProcessTicketStore } from '../../store/tickets/InProcessTicketsStore';
 
 interface Props {
     ticket: ITicket;
-    setTickets: Dispatch<SetStateAction<ITicket[]>>
+    cod: 'abiertos' | 'en_proceso' | 'cancelados' | 'finalizados'
 }
-export const Ticket: FC<Props> = ({ ticket, setTickets }) => {
+export const Ticket: FC<Props> = ({ ticket }) => {
 
     const [open, setOpen] = useState<boolean>(false);
     const [users, setUsers] = useState<IUser | null>(null);
     const user = useUserStore((state) => state.user);
     const [assignments, setAssignments] = useState<Assignment[]>(ticket.assignments);
+    const setOpenTicket = useOpenTicketStore(state => state.setTicket);
+    const setCancelledTicket = useCancelledTicketStore(state => state.setTicket);
+    const setInProcessTicket = useInProcessTicketStore(state => state.setTicket);
+    const setFinishedTicket = useFinishedTicketStore(state => state.setTicket);
     const changeStatus = async (status: TicketStatus) => {
         const url = `${import.meta.env.VITE_BACKEND_API_URL}/ticket/${ticket.id}/status`;
         const body = new URLSearchParams({ status });
@@ -38,11 +46,22 @@ export const Ticket: FC<Props> = ({ ticket, setTickets }) => {
             const response = await fetch(url, options);
 
             const { data } = await response.json();
-            setTickets((tickets) => {
-                const except = tickets.filter((mticket) => mticket.id !== ticket.id);
-                const newTickets: ITicket[] = [...except, data];
-                return newTickets;
-            });
+
+            if (status === 'Abierto') {
+                setOpenTicket(data, ticket.status.description as 'Terminado' | 'Cancelado' | 'En Proceso');
+            }
+
+            if (status === 'Terminado') {
+                setFinishedTicket(data, ticket.status.description as 'Abierto' | 'Cancelado' | 'En Proceso');
+            }
+
+            if (status === 'Cancelado') {
+                setCancelledTicket(data, ticket.status.description as 'Terminado' | 'Abierto' | 'En Proceso');
+            }
+
+            if (status === 'En Proceso') {
+                setInProcessTicket(data, ticket.status.description as 'Terminado' | 'Cancelado' | 'Abierto');
+            }
         } catch (error) {
             console.log({ error })
         }
@@ -64,11 +83,11 @@ export const Ticket: FC<Props> = ({ ticket, setTickets }) => {
             const response = await fetch(url, options);
 
             const { data } = await response.json();
-            setTickets((tickets) => {
-                const except = tickets.filter((mticket) => mticket.id !== ticket.id);
-                const newTickets: ITicket[] = [...except, data];
-                return newTickets;
-            });
+            // setTickets((tickets) => {
+            //     const except = tickets.filter((mticket) => mticket.id !== ticket.id);
+            //     const newTickets: ITicket[] = [...except, data];
+            //     return newTickets;
+            // });
         } catch (error) {
             console.log({ error })
         }
@@ -117,7 +136,7 @@ export const Ticket: FC<Props> = ({ ticket, setTickets }) => {
                         <AvatarGroup>
                             <TicketAssignmentDialog ticket_id={ticket.id} assignments={assignments} setAssignments={setAssignments} />
                             {assignments && assignments.length > 0 && assignments.map((assignment) => (
-                                <Tooltip title={`${assignment.user.names} ${assignment.user.surnames}`} >
+                                <Tooltip key={assignment.id} title={`${assignment.user.names} ${assignment.user.surnames}`} >
                                     <Avatar sx={{ width: 24, height: 24, fontSize: 12, background: assignment.user.color, color: (theme) => `${theme.palette.getContrastText(assignment.user.color)} !important` }}>  {`${assignment.user.names.charAt(0)}${assignment.user.surnames.charAt(0)}`}</Avatar>
                                 </Tooltip>
                             ))}
@@ -224,6 +243,7 @@ const TicketAssignmentDialog: FC<TicketAssignmentDialogProps> = ({ ticket_id, as
                     <Box sx={{ gap: 1, display: 'flex', flexFlow: 'row wrap' }}>
                         {assignments && assignments.length > 0 && assignments.map((assignment) => (
                             <Chip
+                                key={assignment.id}
                                 onClick={() => deleteAssignment(assignment.user.id)}
                                 size='small'
                                 avatar={

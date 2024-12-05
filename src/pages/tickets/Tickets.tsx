@@ -15,6 +15,10 @@ import { DescripcionDeVista } from "../../components/ui/content/DescripcionDeVis
 import { OptionsList } from "../../components/ui/options/OptionsList";
 import { KanbanBoard } from "../../components/tickets/KanbanBoard";
 import { useTicketCategoryStore } from "../../store/ticket_categories/TicketCategoryStore";
+import { useOpenTicketStore } from "../../store/tickets/OpenTicketsStore";
+import { useInProcessTicketStore } from "../../store/tickets/InProcessTicketsStore";
+import { useFinishedTicketStore } from "../../store/tickets/FinishedTicketsStore";
+import { useCancelledTicketStore } from "../../store/tickets/CancelledTicketsStore";
 
 const options = [
     { text: 'Dashboard', icon: <DashboardRounded />, path: '/stats' },
@@ -25,9 +29,17 @@ export const Tickets = () => {
     const user = useUserStore((state) => state.user);
     const echo = useEcho();
     const getCategories = useTicketCategoryStore((state) => state.getCategories);
+    const getOpenTickets = useOpenTicketStore((state) => state.getTickets);
+    const getInProcessTickets = useInProcessTicketStore((state) => state.getTickets);
+    const getFinishedTickets = useFinishedTicketStore((state) => state.getTickets);
+    const getCancelledTickets = useCancelledTicketStore((state) => state.getTickets);
     useEffect(() => {
         validateToken();
         getCategories();
+        getOpenTickets();
+        getInProcessTickets();
+        getFinishedTickets();
+        getCancelledTickets();
         if (user) {
             if (echo) {
                 echo.join(`status_online.${user?.isOnline}`)

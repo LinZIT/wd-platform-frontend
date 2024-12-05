@@ -1,20 +1,27 @@
-import { FC, useEffect } from "react";
+import { FC } from "react";
 import { useTheme, darken, lighten, Box, Skeleton } from "@mui/material";
 import { purple, blue, green, red } from "@mui/material/colors";
-import { useTickets } from "../../hooks/useTickets";
 import { TypographyCustom } from "../custom";
 import { Ticket } from "./Ticket";
 import { motion } from "framer-motion";
+import { useOpenTicketStore } from "../../store/tickets/OpenTicketsStore";
+import { useInProcessTicketStore } from "../../store/tickets/InProcessTicketsStore";
+import { useFinishedTicketStore } from "../../store/tickets/FinishedTicketsStore";
+import { useCancelledTicketStore } from "../../store/tickets/CancelledTicketsStore";
 
 export const KanbanBoard: FC = () => {
-    const { tickets, setTickets, numbers, setNumbers, loading } = useTickets();
+
     const theme = useTheme();
+    const openTickets = useOpenTicketStore((state) => state.pagination);
+    const inProcessTickets = useInProcessTicketStore((state) => state.pagination);
+    const finishedTickets = useFinishedTicketStore((state) => state.pagination);
+    const cancelledTickets = useCancelledTicketStore((state) => state.pagination);
 
     const columns = [
-        { id: 1, cod: 'abiertos', status: 'Abiertos', color: purple[300], tickets: tickets.filter((ticket) => ticket.status.description === 'Abierto'), number: numbers['abiertos'] },
-        { id: 2, cod: 'en_proceso', status: 'En Proceso', color: blue[500], tickets: tickets.filter((ticket) => ticket.status.description === 'En Proceso'), number: numbers['en_proceso'] },
-        { id: 3, cod: 'terminados', status: 'Terminados', color: green[500], tickets: tickets.filter((ticket) => ticket.status.description === 'Terminado'), number: numbers['terminados'] },
-        { id: 4, cod: 'cancelados', status: 'Cancelados', color: red[500], tickets: tickets.filter((ticket) => ticket.status.description === 'Cancelado'), number: numbers['cancelados'] },
+        { id: 1, cod: 'abiertos', codEnglish: 'open', status: 'Abiertos', color: purple[300], pagination: openTickets.data },
+        { id: 2, cod: 'en_proceso', codEnglish: 'in_process', status: 'En Proceso', color: blue[500], pagination: inProcessTickets.data },
+        { id: 3, cod: 'terminados', codEnglish: 'finished', status: 'Terminados', color: green[500], pagination: finishedTickets.data },
+        { id: 4, cod: 'cancelados', codEnglish: 'cancelled', status: 'Cancelados', color: red[500], pagination: cancelledTickets.data },
     ]
     const styles = {
         mainContainer: {
@@ -36,13 +43,15 @@ export const KanbanBoard: FC = () => {
                 backgroundColor: lighten(theme.palette.background.default, 0.2),
                 cursor: theme.palette.mode === 'dark' ? "url('scroll-white.svg') 25 20, pointer" : "url('scroll.svg') 25 20, pointer",
             },
-        }
+        },
+        ticketContainer: { flexGrow: 1, minHeight: 210, borderRadius: 4, borderTopRightRadius: 0, borderTopLeftRadius: 0 },
+        variants: { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.25 } } }
     }
     return (
         <Box sx={styles.mainContainer}>
             <Box sx={styles.scrollContainer}>
                 {columns.map((column) => <Box key={column.id}>
-                    <Box sx={{ border: '1px solid rgba(150,150,150,0.5)', borderRadius: 4, minWidth: 400, maxWidth: 400, height: '100%', display: 'flex', flexFlow: 'column wrap' }}>
+                    <Box key={column.id} sx={{ border: '1px solid rgba(150,150,150,0.5)', borderRadius: 4, minWidth: 400, maxWidth: 400, height: '100%', display: 'flex', flexFlow: 'column wrap' }}>
                         <Box
                             sx={{
                                 p: 1,
@@ -57,24 +66,52 @@ export const KanbanBoard: FC = () => {
                             }}>
                             <TypographyCustom variant="overline">{column.status}</TypographyCustom>
                         </Box>
-                        <Box sx={{ flexGrow: 1, minHeight: 210, borderRadius: 4, borderTopRightRadius: 0, borderTopLeftRadius: 0 }} >
-                            {loading && tickets.length === 0 && (
-                                <>
-                                    <Box sx={{ width: 300, height: 200, p: 2, mb: 1 }}>
-                                        <Skeleton variant="rounded" animation="wave" width={370} height={180} />
-                                    </Box>
-                                    <Box sx={{ width: 300, height: 200, p: 2, mb: 1 }}>
-                                        <Skeleton variant="rounded" animation="wave" width={370} height={180} />
-                                    </Box>
-                                </>
-                            )}
-                            <motion.section initial="hidden" animate="show" variants={{ hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.25 } } }}>
-                                {column.tickets.map((ticket) => (<Ticket key={ticket.id} ticket={ticket} setTickets={setTickets} />))}
+
+                        {/* Tickets Abiertos */}
+                        {column.cod === 'abiertos' && (<Box sx={styles.ticketContainer} >
+                            {openTickets.status === false && openTickets.data.data.length === 0 && (<TicketSkeleton />)}
+                            <motion.section initial="hidden" animate="show" variants={styles.variants}>
+                                {openTickets.data.data && openTickets.data.data.length > 0 && openTickets.data.data.map((ticket) => (<Ticket key={ticket.id} ticket={ticket} cod={column.cod as "abiertos" | "en_proceso" | "cancelados" | "finalizados"} />))}
                             </motion.section>
-                        </Box>
+                        </Box>)}
+
+                        {/* Tickets Cancelados */}
+                        {column.cod === 'cancelados' && (<Box sx={styles.ticketContainer} >
+                            {cancelledTickets.status === false && cancelledTickets.data.data.length === 0 && (<TicketSkeleton />)}
+                            <motion.section initial="hidden" animate="show" variants={styles.variants}>
+                                {cancelledTickets.data.data && cancelledTickets.data.data.length > 0 && cancelledTickets.data.data.map((ticket) => (<Ticket key={ticket.id} ticket={ticket} cod={column.cod as "abiertos" | "en_proceso" | "cancelados" | "finalizados"} />))}
+                            </motion.section>
+                        </Box>)}
+
+                        {/* Tickets Finalizados */}
+                        {column.cod === 'finalizados' && (<Box sx={styles.ticketContainer} >
+                            {finishedTickets.status === false && finishedTickets.data.data.length === 0 && (<TicketSkeleton />)}
+                            <motion.section initial="hidden" animate="show" variants={styles.variants}>
+                                {finishedTickets.data.data && finishedTickets.data.data.length > 0 && finishedTickets.data.data.map((ticket) => (<Ticket key={ticket.id} ticket={ticket} cod={column.cod as "abiertos" | "en_proceso" | "cancelados" | "finalizados"} />))}
+                            </motion.section>
+                        </Box>)}
+
+                        {/* Tickets En Proceso */}
+                        {column.cod === 'en_proceso' && (<Box sx={styles.ticketContainer} >
+                            {inProcessTickets.status === false && inProcessTickets.data.data.length === 0 && (<TicketSkeleton />)}
+                            <motion.section initial="hidden" animate="show" variants={styles.variants}>
+                                {inProcessTickets.data.data && inProcessTickets.data.data.length > 0 && inProcessTickets.data.data.map((ticket) => (<Ticket key={ticket.id} ticket={ticket} cod={column.cod as "abiertos" | "en_proceso" | "cancelados" | "finalizados"} />))}
+                            </motion.section>
+                        </Box>)}
                     </Box >
                 </Box>)}
             </Box>
         </Box>
     )
 }
+
+const TicketSkeleton = () => (
+    <>
+        <Box sx={{ width: 300, height: 200, p: 2, mb: 1 }}>
+            <Skeleton variant="rounded" animation="wave" width={370} height={180} />
+        </Box>
+        <Box sx={{ width: 300, height: 200, p: 2, mb: 1 }}>
+            <Skeleton variant="rounded" animation="wave" width={370} height={180} />
+        </Box>
+    </>
+)
