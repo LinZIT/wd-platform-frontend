@@ -74,8 +74,16 @@ export const useOpenTicketStore = create<State>((set, get) => ({
             case 200:
                 const prevTickets = get().pagination.data.data
                 const data = await response.json();
-                const newData = [...prevTickets, ...data.data]
-                set({ pagination: { stauts: true, ...data } });
+                const newData = [...prevTickets, ...data.data.data]
+                set({
+                    pagination: {
+                        status: true,
+                        data: {
+                            ...data,
+                            data: newData
+                        }
+                    }
+                });
                 return data;
             default:
                 return data;
