@@ -34,9 +34,9 @@ export const Layout: FC<Props> = ({ children, chat = true, container = true }) =
                     {children}
                 </Box>
             )}
-            {chat && (
+            {/* {chat && (
                 <Chat />
-            )}
+            )} */}
             {/* <Footer /> */}
             <ToastContainer
                 stacked

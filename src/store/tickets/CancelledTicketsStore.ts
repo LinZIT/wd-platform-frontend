@@ -36,7 +36,10 @@ interface State {
     getTickets: () => Promise<void>;
     getNextPage: (url: string) => Promise<Pagination | null>;
     setTicket: (ticket: ITicket, status: 'Terminado' | 'Abierto' | 'En Proceso') => void;
+    setTicketPriority: (ticket: ITicket, priority: 'Alta' | 'Media' | 'Baja' | 'Critica') => void;
     removeTicket: (ticket_id: number) => void;
+    removeBadge: (ticket: ITicket) => void;
+
 }
 export const useCancelledTicketStore = create<State>((set, get) => ({
     pagination: {
@@ -92,11 +95,28 @@ export const useCancelledTicketStore = create<State>((set, get) => ({
     setTicket: (ticket: ITicket, status: 'Terminado' | 'Abierto' | 'En Proceso') => {
         const tickets = get().pagination.data.data;
         const actualPagination = get().pagination.data
-        const newTickets = [...tickets, ticket]
+        const newTickets = [...tickets.filter((t) => t.id !== ticket.id), ticket]
         newTickets.sort((a, b) => a.id - b.id);
         if (status === 'Abierto') useOpenTicketStore.getState().removeTicket(ticket.id)
         if (status === 'En Proceso') useInProcessTicketStore.getState().removeTicket(ticket.id)
         if (status === 'Terminado') useFinishedTicketStore.getState().removeTicket(ticket.id)
+        set({
+            pagination: {
+                status: true,
+                data: {
+                    ...actualPagination,
+                    data: newTickets,
+                }
+            }
+        })
+    },
+    setTicketPriority: (ticket: ITicket, priority: 'Alta' | 'Media' | 'Baja' | 'Critica') => {
+        const tickets = get().pagination.data.data;
+        const actualPagination = get().pagination.data
+        const excludeTicket = tickets.filter(t => t.id !== ticket.id)
+        const newTicket = { ...ticket, priority }
+        const newTickets = [...excludeTicket, newTicket]
+        newTickets.sort((a, b) => a.id - b.id);
         set({
             pagination: {
                 status: true,
@@ -116,6 +136,26 @@ export const useCancelledTicketStore = create<State>((set, get) => ({
                 data: {
                     ...pagination,
                     data: newDataExclude,
+                }
+            }
+        })
+    },
+    removeBadge: (ticket: ITicket) => {
+        const tickets = get().pagination.data.data;
+        const actualPagination = get().pagination.data
+
+        const excludeTicket = tickets.filter(t => t.id !== ticket.id)
+        const old = excludeTicket.filter(t => t.new === 0);
+        const news = excludeTicket.filter(t => t.new !== 0);
+        const newTicket = { ...ticket, new: 0 }
+        const newTickets = [...old, newTicket]
+        newTickets.sort((a, b) => a.id - b.id);
+        set({
+            pagination: {
+                status: true,
+                data: {
+                    ...actualPagination,
+                    data: [...news, ...newTickets],
                 }
             }
         })

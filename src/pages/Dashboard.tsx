@@ -16,14 +16,17 @@ import { DescripcionDeVista } from '../components/ui/content/DescripcionDeVista'
 import { useUserStore } from '../store/user/UserStore';
 
 import moment from 'moment';
+import { useTicketCategoryStore } from '../store/ticket_categories/TicketCategoryStore';
 const options = [
     { text: 'Tickets', icon: <ConfirmationNumberIcon />, path: '/tickets' },
 ]
 export const Dashboard = () => {
     const user = useUserStore((state) => state.user);
     const validateToken = useUserStore((state) => state.validateToken);
+    const getCategories = useTicketCategoryStore((state) => state.getCategories);
     useEffect(() => {
         validateToken();
+        getCategories();
     }, [])
     const router = useNavigate();
     const days: any = {

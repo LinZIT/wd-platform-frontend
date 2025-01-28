@@ -1,4 +1,4 @@
-import { Box, Divider, AvatarGroup, Avatar, Dialog, IconButton, AppBar, Toolbar, Tooltip, Popover, Chip, useTheme, List, ListItem, ListItemIcon, CircularProgress, ListItemText, LinearProgress, lighten, } from '@mui/material';
+import { Box, Divider, AvatarGroup, Avatar, Dialog, IconButton, AppBar, Toolbar, Tooltip, Popover, Chip, useTheme, List, ListItem, ListItemIcon, CircularProgress, ListItemText, LinearProgress, lighten, Badge, } from '@mui/material';
 import { motion } from "framer-motion";
 import { Dispatch, SetStateAction, FC, useState, useEffect } from "react";
 import { Assignment, ITicket, TicketStatus } from '../../interfaces/ticket-type';
@@ -14,6 +14,8 @@ import { useOpenTicketStore } from '../../store/tickets/OpenTicketsStore';
 import { useCancelledTicketStore } from '../../store/tickets/CancelledTicketsStore';
 import { useFinishedTicketStore } from '../../store/tickets/FinishedTicketsStore';
 import { useInProcessTicketStore } from '../../store/tickets/InProcessTicketsStore';
+import useEcho from '../useEcho';
+import { amber, red } from '@mui/material/colors';
 
 interface Props {
     ticket: ITicket;
@@ -22,13 +24,52 @@ interface Props {
 export const Ticket: FC<Props> = ({ ticket }) => {
 
     const [open, setOpen] = useState<boolean>(false);
-    const [users, setUsers] = useState<IUser | null>(null);
     const user = useUserStore((state) => state.user);
+    const echo = useEcho();
     const [assignments, setAssignments] = useState<Assignment[]>(ticket.assignments);
-    const setOpenTicket = useOpenTicketStore(state => state.setTicket);
-    const setCancelledTicket = useCancelledTicketStore(state => state.setTicket);
-    const setInProcessTicket = useInProcessTicketStore(state => state.setTicket);
-    const setFinishedTicket = useFinishedTicketStore(state => state.setTicket);
+    const openTicketState = useOpenTicketStore(state => state);
+    const cancelledTicketState = useCancelledTicketStore(state => state);
+    const inProcessTicketState = useInProcessTicketStore(state => state);
+    const finishedTicketState = useFinishedTicketStore(state => state);
+
+    useEffect(() => {
+        if (user.token) {
+            if (echo) {
+                echo.join(`ticketsRoom.${user?.department_id}`)
+                    .listen('TicketAssignUser', ({ ticket_assignments, assigned_user, action, ticket_id }: any) => {
+                        if (ticket_id === ticket.id) {
+                            handleCallback(ticket_assignments, assigned_user, action)
+                        }
+                    })
+                    .listen('TicketStatusChanged', (event: any) => {
+                        if (event.ticket.id === ticket.id) {
+                            handleCallbackStatus(event.ticket, event.prev_status)
+                        }
+                    })
+                    .listen('TicketPriorityChanged', (event: any) => {
+                        if (event.ticket.id === ticket.id) {
+                            console.log(event)
+                            handleCallbackPriority(event.priority)
+                        }
+                    })
+            }
+        }
+        return () => {
+            if (user.token) {
+                if (echo) {
+                    echo.leave(`ticketsRoom.${user?.department_id}`);
+                }
+            }
+        };
+    }, [echo, user.token])
+
+    const handleCallback = (ticket_assignments: any, user_id: number, action: string) => {
+        if (user_id === user.id && action === 'add') {
+            toast.info(`Se te ha asignado un nuevo ticket (id: ${ticket.id})`);
+        }
+        setAssignments(ticket_assignments);
+    }
+
     const changeStatus = async (status: TicketStatus) => {
         const url = `${import.meta.env.VITE_BACKEND_API_URL}/ticket/${ticket.id}/status`;
         const body = new URLSearchParams({ status });
@@ -46,24 +87,58 @@ export const Ticket: FC<Props> = ({ ticket }) => {
             const response = await fetch(url, options);
 
             const { data } = await response.json();
-
+            console.log(data, ticket.status.description, status)
             if (status === 'Abierto') {
-                setOpenTicket(data, ticket.status.description as 'Terminado' | 'Cancelado' | 'En Proceso');
+                openTicketState.setTicket(data, ticket.status.description as 'Terminado' | 'Cancelado' | 'En Proceso');
+                setAssignments(data.assignments);
             }
 
             if (status === 'Terminado') {
-                setFinishedTicket(data, ticket.status.description as 'Abierto' | 'Cancelado' | 'En Proceso');
+                finishedTicketState.setTicket(data, ticket.status.description as 'Abierto' | 'Cancelado' | 'En Proceso');
+                setAssignments(data.assignments);
             }
 
             if (status === 'Cancelado') {
-                setCancelledTicket(data, ticket.status.description as 'Terminado' | 'Abierto' | 'En Proceso');
+                cancelledTicketState.setTicket(data, ticket.status.description as 'Terminado' | 'Abierto' | 'En Proceso');
+                setAssignments(data.assignments);
             }
 
             if (status === 'En Proceso') {
-                setInProcessTicket(data, ticket.status.description as 'Terminado' | 'Cancelado' | 'Abierto');
+                inProcessTicketState.setTicket(data, ticket.status.description as 'Terminado' | 'Cancelado' | 'Abierto');
+                setAssignments(data.assignments);
             }
         } catch (error) {
             console.log({ error })
+        }
+    }
+
+    const handleCallbackStatus = (ticket: ITicket, prev_status: string) => {
+        if (ticket.status.description === 'Abierto') {
+            console.log({ prev_status })
+            console.log({ ticket })
+            openTicketState.setTicket(ticket, prev_status as 'Terminado' | 'Cancelado' | 'En Proceso');
+            setAssignments(ticket.assignments);
+        }
+
+        if (ticket.status.description === 'Terminado') {
+            console.log({ prev_status })
+            console.log({ ticket })
+            finishedTicketState.setTicket(ticket, prev_status as 'Abierto' | 'Cancelado' | 'En Proceso');
+            setAssignments(ticket.assignments);
+        }
+
+        if (ticket.status.description === 'Cancelado') {
+            console.log({ prev_status })
+            console.log({ ticket })
+            cancelledTicketState.setTicket(ticket, prev_status as 'Terminado' | 'Abierto' | 'En Proceso');
+            setAssignments(ticket.assignments);
+        }
+
+        if (ticket.status.description === 'En Proceso') {
+            console.log({ prev_status, actual_status: ticket.status.description })
+            console.log({ ticket })
+            inProcessTicketState.setTicket(ticket, prev_status as 'Terminado' | 'Cancelado' | 'Abierto');
+            setAssignments(ticket.assignments);
         }
     }
     const changePriority = async (priority: 'Alta' | 'Media' | 'Baja' | 'Critica') => {
@@ -83,17 +158,63 @@ export const Ticket: FC<Props> = ({ ticket }) => {
             const response = await fetch(url, options);
 
             const { data } = await response.json();
-            // setTickets((tickets) => {
-            //     const except = tickets.filter((mticket) => mticket.id !== ticket.id);
-            //     const newTickets: ITicket[] = [...except, data];
-            //     return newTickets;
-            // });
+
+            if (ticket.status.description === 'Abierto') {
+                openTicketState.setTicketPriority(data, priority);
+            }
+
+            if (ticket.status.description === 'Terminado') {
+                finishedTicketState.setTicketPriority(data, priority);
+            }
+
+            if (ticket.status.description === 'Cancelado') {
+                cancelledTicketState.setTicketPriority(data, priority);
+            }
+
+            if (ticket.status.description === 'En Proceso') {
+                inProcessTicketState.setTicketPriority(data, priority);
+            }
         } catch (error) {
             console.log({ error })
         }
     }
+    const handleCallbackPriority = (priority: "Alta" | "Media" | "Baja" | "Critica") => {
+        console.log({ priority })
+        if (ticket.status.description === 'Abierto') {
+            openTicketState.setTicketPriority(ticket, priority);
+        }
+
+        if (ticket.status.description === 'Terminado') {
+            finishedTicketState.setTicketPriority(ticket, priority);
+        }
+
+        if (ticket.status.description === 'Cancelado') {
+            cancelledTicketState.setTicketPriority(ticket, priority);
+        }
+
+        if (ticket.status.description === 'En Proceso') {
+            inProcessTicketState.setTicketPriority(ticket, priority);
+        }
+    }
     const handleOpen = () => {
         setOpen(true);
+        if (ticket.new !== 0) {
+            if (ticket.status.description === 'Abierto') {
+                openTicketState.removeBadge(ticket);
+            }
+
+            if (ticket.status.description === 'Terminado') {
+                finishedTicketState.removeBadge(ticket);
+            }
+
+            if (ticket.status.description === 'Cancelado') {
+                cancelledTicketState.removeBadge(ticket);
+            }
+
+            if (ticket.status.description === 'En Proceso') {
+                inProcessTicketState.removeBadge(ticket);
+            }
+        }
     }
     const customHead = [
         'ID',
@@ -115,11 +236,12 @@ export const Ticket: FC<Props> = ({ ticket }) => {
                     sx={{
                         transition: '1s ease all',
                         touchAction: 'none',
-                        border: '1px solid rgba(150,150,150,0.2)', borderRadius: 4, m: 1, p: 2, cursor: 'pointer',
+                        border: `1px solid ${ticket.priority === 'Critica' ? red[500] : 'rgba(150,150,150,0.2)'}`, borderRadius: 4, m: 1, p: 2, cursor: 'pointer',
                         WebkitUserSelect: 'none',
                         msUserSelect: 'none',
                         userSelect: 'none',
                     }}>
+                    <Badge variant="dot" color="error" anchorOrigin={{ vertical: 'top', horizontal: 'left' }} invisible={!ticket.new} />
                     <Box onClick={handleOpen}>
                         <Box sx={{ display: 'flex', flexFlow: 'row wrap', justifyContent: 'space-between', alignItems: 'center', }}>
                             <TypographyCustom variant={'subtitle2'} fontWeight={'200'}>{ticket.id}</TypographyCustom>
@@ -129,6 +251,7 @@ export const Ticket: FC<Props> = ({ ticket }) => {
                         <Box sx={{ mt: 2, mb: 2, textAlign: "left" }}>
                             <TypographyCustom variant="subtitle2" fontSize={12}>{`${ticket.description.length > 100 ? ticket.description.substring(0, 97) + '...' : ticket.description}`}</TypographyCustom>
                         </Box>
+                        <Box sx={{ filter: 'opacity(0)' }}>Lorem ipsum dolor sit amet consectetur adipisicing elit.</Box>
                         <TypographyCustom variant="subtitle2" color="text.secondary" textAlign={'right'}>{moment(new Date(ticket.created_at)).format('D/M/Y')}</TypographyCustom>
                         <Divider sx={{ marginBlock: 1 }} />
                     </Box>
@@ -162,19 +285,20 @@ const TicketAssignmentDialog: FC<TicketAssignmentDialogProps> = ({ ticket_id, as
     const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
         setAnchorEl(event?.currentTarget);
     };
-
+    //  Funcion para cerrar el modal de asignacion
     const handleClose = () => {
         setAnchorEl(null);
     };
+    // Funcion para obtener los usuarios disponibles para asignar
     const getUsers = async () => {
         setLoading(true);
         const { status, response, err }: { status: number, response: any, err: any } = await request(`/users/it/for/ticket/${ticket_id}/paginated`, 'GET');
         switch (status) {
             case 200:
                 const { data } = await response.json();
-                console.log({ data })
                 setUsers(data.data);
                 setLoading(false);
+                console.log({ data });
                 return status;
             default:
                 setLoading(false);
@@ -188,14 +312,15 @@ const TicketAssignmentDialog: FC<TicketAssignmentDialogProps> = ({ ticket_id, as
             case 200:
                 const { data } = await response.json();
                 setAssignments(data);
-                toast.success('Usuario asignado correctamente');
+                toast.success('Usuario asignado correctamente al ticket');
                 handleClose();
                 break;
             default:
-                toast.error('No se logro asignar el usuario');
+                toast.error('Error: No se logró asignar el usuario');
                 break;
         }
     }
+    // Borrar usuario asignado al ticket
     const deleteAssignment = async (user_id: number) => {
         const { status, response, err }: { status: number, response: any, err: any } = await request(`/ticket/${ticket_id}/assign/${user_id}`, 'PUT')
 
@@ -203,18 +328,21 @@ const TicketAssignmentDialog: FC<TicketAssignmentDialogProps> = ({ ticket_id, as
             case 200:
                 const { data } = await response.json();
                 setAssignments(data);
-                toast.success('Usuario eliminado correctamente');
+                toast.success('Se ha removido el usuario asignado');
                 handleClose();
                 break;
             default:
-                toast.error('No se logro eliminar el usuario');
+                toast.error('No se logro remover el usuario');
                 break;
         }
     }
+
     const open = Boolean(anchorEl);
+
     useEffect(() => {
         if (open) getUsers();
     }, [anchorEl]);
+
     const id = open ? 'simple-popover' : undefined;
     const theme = useTheme();
     return (
@@ -259,7 +387,7 @@ const TicketAssignmentDialog: FC<TicketAssignmentDialogProps> = ({ ticket_id, as
                         {loading && (<LinearProgress sx={{ background: lighten(user.color, 0.2) }} />)}
                         <List>
                             {!loading && users && users.length > 0 && users.map((user) => (
-                                <ListItem>
+                                <ListItem key={user.id}>
                                     <Chip onClick={() => assignUser(user.id)} label={`${user.names} ${user.surnames}`} avatar={<Avatar sx={{ background: user.color, color: `${theme.palette.getContrastText(user.color)} !important` }}>{`${user.names.charAt(0)}${user.surnames.charAt(0)}`}</Avatar>} />
                                 </ListItem>
                             ))}

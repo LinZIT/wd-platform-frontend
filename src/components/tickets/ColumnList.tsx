@@ -41,7 +41,7 @@ export const ColumnList = ({ columns, tickets, columnsId, numbers }: Props) => {
         <SortableContext items={columnsId}>
             <Box sx={styles.mainContainer}>
                 <Box sx={styles.scrollContainer}>
-                    {columns.map(column => <ColumnItem key={column.id} column={column} numbers={numbers} tickets={tickets.filter(ti => ti.status === column.status)} isDraggingATicket={isDraggingATicket}
+                    {columns.map(column => <ColumnItem key={column.id} column={column} numbers={numbers} tickets={tickets.filter(ti => ti.status.description === column.status)} isDraggingATicket={isDraggingATicket}
                         setIsDraggingATicket={setIsDraggingATicket} />)}
                 </Box>
             </Box>

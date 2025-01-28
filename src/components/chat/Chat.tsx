@@ -17,29 +17,29 @@ export const Chat = () => {
     const echo = useEcho();
     const addUsers = useUserListStore((state) => state.addUsers);
     const unreadMessages = useMessagesStore((state) => state.unreadMessages);
-    useEffect(() => {
-        validateToken();
-        if (user) {
-            if (echo) {
-                const status_channel = echo.private(`status_online.${user?.isOnline}`);
-                echo.join(`status_online.${user?.isOnline}`)
-                    .here((users: any[]) => {
-                        console.log({ users })
-                    })
-                    .joining((user: any) => {
-                        console.log('joining', { user })
-                        // getAllUsers();
-                        handleCallbackJoining();
-                    })
-                    .leaving((user: any) => {
-                        console.log('leaving', { user })
-                        // getAllUsers();
-                        handleCallbackLeaving();
-                    })
-            }
-        }
-        getOnlineUsers();
-    }, [])
+    // useEffect(() => {
+    //     validateToken();
+    //     if (user) {
+    //         if (echo) {
+    //             const status_channel = echo.private(`status_online.${user?.isOnline}`);
+    //             echo.join(`status_online.${user?.isOnline}`)
+    //                 .here((users: any[]) => {
+    //                     console.log({ users })
+    //                 })
+    //                 .joining((user: any) => {
+    //                     console.log('joining', { user })
+    //                     // getAllUsers();
+    //                     handleCallbackJoining();
+    //                 })
+    //                 .leaving((user: any) => {
+    //                     console.log('leaving', { user })
+    //                     // getAllUsers();
+    //                     handleCallbackLeaving();
+    //                 })
+    //         }
+    //     }
+    //     getOnlineUsers();
+    // }, [])
 
     const handleCallback = () => {
         console.log('handleCallback');

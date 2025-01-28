@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, useEffect } from "react";
 import { useTheme, darken, lighten, Box, Skeleton, LinearProgress } from "@mui/material";
 import { purple, blue, green, red } from "@mui/material/colors";
 import { TypographyCustom } from "../custom";
@@ -23,7 +23,16 @@ export const KanbanBoard: FC = () => {
     const inProcessTicketsGetNextPage = useInProcessTicketStore((state) => state.getNextPage);
     const finishedTicketsGetNextPage = useFinishedTicketStore((state) => state.getNextPage);
     const cancelledTicketsGetNextPage = useCancelledTicketStore((state) => state.getNextPage);
-
+    const getOpenTickets = useOpenTicketStore((state) => state.getTickets);
+    const getInProcessTickets = useInProcessTicketStore((state) => state.getTickets);
+    const getFinishedTickets = useFinishedTicketStore((state) => state.getTickets);
+    const getCancelledTickets = useCancelledTicketStore((state) => state.getTickets);
+    useEffect(() => {
+        getOpenTickets();
+        getInProcessTickets();
+        getFinishedTickets();
+        getCancelledTickets();
+    }, [])
     const columns = [
         { id: 1, cod: 'abiertos', codEnglish: 'open', status: 'Abiertos', color: purple[300], pagination: openTickets.data },
         { id: 2, cod: 'en_proceso', codEnglish: 'in_process', status: 'En Proceso', color: blue[500], pagination: inProcessTickets.data },

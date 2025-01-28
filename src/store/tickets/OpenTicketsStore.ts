@@ -36,7 +36,10 @@ interface State {
     getTickets: () => Promise<void>;
     getNextPage: (url: string) => Promise<Pagination | null>;
     setTicket: (ticket: ITicket, status: 'En Proceso' | 'Terminado' | 'Cancelado') => void;
+    setTicketPriority: (ticket: ITicket, priority: 'Alta' | 'Media' | 'Baja' | 'Critica') => void;
     removeTicket: (ticket_id: number) => void;
+    addNewTicket: (ticket: ITicket) => void;
+    removeBadge: (ticket: ITicket) => void;
 }
 export const useOpenTicketStore = create<State>((set, get) => ({
     pagination: {
@@ -62,7 +65,21 @@ export const useOpenTicketStore = create<State>((set, get) => ({
         switch (status) {
             case 200:
                 const data = await response.json();
-                set({ pagination: data });
+                const pagination = data.data;
+                const tickets = pagination.data;
+                const old = tickets.filter((t: any) => t.new === 0);
+                const news = tickets.filter((t: any) => t.new !== 0);
+                const newTickets = [...news, ...old];
+                console.log({ pagination })
+                set({
+                    pagination: {
+                        status: true,
+                        data: {
+                            ...pagination,
+                            data: newTickets
+                        },
+                    }
+                });
                 break;
             default:
                 break;
@@ -92,11 +109,28 @@ export const useOpenTicketStore = create<State>((set, get) => ({
     setTicket: (ticket: ITicket, status: 'En Proceso' | 'Terminado' | 'Cancelado') => {
         const tickets = get().pagination.data.data;
         const actualPagination = get().pagination.data
-        const newTickets = [...tickets, ticket]
+        const newTickets = [...tickets.filter((t) => t.id !== ticket.id), ticket]
         newTickets.sort((a, b) => a.id - b.id);
         if (status === 'Terminado') useFinishedTicketStore.getState().removeTicket(ticket.id)
         if (status === 'Cancelado') useCancelledTicketStore.getState().removeTicket(ticket.id)
         if (status === 'En Proceso') useInProcessTicketStore.getState().removeTicket(ticket.id)
+        set({
+            pagination: {
+                status: true,
+                data: {
+                    ...actualPagination,
+                    data: newTickets,
+                }
+            }
+        })
+    },
+    setTicketPriority: (ticket: ITicket, priority: 'Alta' | 'Media' | 'Baja' | 'Critica') => {
+        const tickets = get().pagination.data.data;
+        const actualPagination = get().pagination.data
+        const excludeTicket = tickets.filter(t => t.id !== ticket.id)
+        const newTicket = { ...ticket, priority }
+        const newTickets = [...excludeTicket, newTicket]
+        newTickets.sort((a, b) => a.id - b.id);
         set({
             pagination: {
                 status: true,
@@ -119,6 +153,44 @@ export const useOpenTicketStore = create<State>((set, get) => ({
                 }
             }
         })
-    }
+    },
+    addNewTicket: (data: any) => {
 
+        const pagination = get().pagination.data;
+        const tickets = get().pagination.data.data;
+        const validate = tickets.filter(t => t.id === data.ticket.id);
+        if (validate?.length > 0) return;
+        const newTicket = { ...data.ticket, new: true };
+        const newData = [newTicket, ...tickets]
+        set({
+            pagination: {
+                status: true,
+                data: {
+                    ...pagination,
+                    data: newData
+                }
+            }
+        })
+
+    },
+    removeBadge: (ticket: ITicket) => {
+        const tickets = get().pagination.data.data;
+        const actualPagination = get().pagination.data
+
+        const excludeTicket = tickets.filter(t => t.id !== ticket.id)
+        const old = excludeTicket.filter(t => t.new === 0);
+        const news = excludeTicket.filter(t => t.new !== 0);
+        const newTicket = { ...ticket, new: 0 }
+        const newTickets = [...old, newTicket]
+        newTickets.sort((a, b) => a.id - b.id);
+        set({
+            pagination: {
+                status: true,
+                data: {
+                    ...actualPagination,
+                    data: [...news, ...newTickets],
+                }
+            }
+        })
+    }
 }));

@@ -7,6 +7,8 @@ import { Layout } from "../../components/ui/Layout"
 import { Form, Formik, FormikState } from "formik"
 import { request } from "../../common/request"
 import { toast } from "react-toastify"
+import { useEffect } from "react";
+import useEcho from "../../components/useEcho";
 
 interface InitialValues {
     description: string;
@@ -21,6 +23,7 @@ const initialValues = {
 export const CreateNewTicket = () => {
 
     const user = useUserStore((state) => state.user);
+    const validateToken = useUserStore((state) => state.validateToken);
     const onSubmit = async (values: InitialValues, resetForm: (nextState?: Partial<FormikState<InitialValues>> | undefined) => void) => {
         const body = new URLSearchParams({ description: String(values.description), user_id: String(user.id) })
         const { status, response, err } = await request('/ticket', 'POST', body)
@@ -41,7 +44,9 @@ export const CreateNewTicket = () => {
                 break;
         }
     }
-
+    useEffect(() => {
+        validateToken();
+    }, []);
     return (
         <Layout>
             <Box sx={{ display: 'flex', flexFlow: 'column wrap', justifyContent: 'space-between', alignItems: 'center', gap: 4 }}>

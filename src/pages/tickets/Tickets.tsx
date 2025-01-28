@@ -2,23 +2,18 @@ import { useEffect } from "react";
 import { Layout } from "../../components/ui/Layout"
 import { useUserStore } from "../../store/user/UserStore";
 import useEcho from "../../components/useEcho";
-
 import MenuItem from "@mui/material/MenuItem";
 import IconButton from "@mui/material/IconButton";
 import Box from "@mui/material/Box";
 import AddRounded from "@mui/icons-material/AddRounded";
 import SearchRounded from "@mui/icons-material/SearchRounded";
 import DashboardRounded from "@mui/icons-material/DashboardRounded";
-
 import { SelectCustom, TextFieldCustom } from "../../components/custom";
 import { DescripcionDeVista } from "../../components/ui/content/DescripcionDeVista";
 import { OptionsList } from "../../components/ui/options/OptionsList";
 import { KanbanBoard } from "../../components/tickets/KanbanBoard";
-import { useTicketCategoryStore } from "../../store/ticket_categories/TicketCategoryStore";
+import { ITicket } from "../../interfaces/ticket-type";
 import { useOpenTicketStore } from "../../store/tickets/OpenTicketsStore";
-import { useInProcessTicketStore } from "../../store/tickets/InProcessTicketsStore";
-import { useFinishedTicketStore } from "../../store/tickets/FinishedTicketsStore";
-import { useCancelledTicketStore } from "../../store/tickets/CancelledTicketsStore";
 
 const options = [
     { text: 'Dashboard', icon: <DashboardRounded />, path: '/stats' },
@@ -28,28 +23,33 @@ export const Tickets = () => {
     const validateToken = useUserStore((state) => state.validateToken);
     const user = useUserStore((state) => state.user);
     const echo = useEcho();
-    const getCategories = useTicketCategoryStore((state) => state.getCategories);
-    const getOpenTickets = useOpenTicketStore((state) => state.getTickets);
-    const getInProcessTickets = useInProcessTicketStore((state) => state.getTickets);
-    const getFinishedTickets = useFinishedTicketStore((state) => state.getTickets);
-    const getCancelledTickets = useCancelledTicketStore((state) => state.getTickets);
+    const openTickets = useOpenTicketStore((state) => state);
+    const addNewTicket = async (data: ITicket) => {
+        openTickets.addNewTicket(data);
+    }
     useEffect(() => {
-        validateToken();
-        getCategories();
-        getOpenTickets();
-        getInProcessTickets();
-        getFinishedTickets();
-        getCancelledTickets();
-        if (user) {
+        if (!user.token) {
+            validateToken();
+        }
+        if (user.token) {
             if (echo) {
-                echo.join(`status_online.${user?.isOnline}`)
-                    .here((users: any[]) => {
-                        console.log({ users })
+                echo.join(`ticketsRoom.${user?.department_id}`)
+                    .listen('TicketCreated', async (data: any) => {
+                        await handleCallback(data);
                     })
             }
         }
-
-    }, []);
+        return () => {
+            if (user.token) {
+                if (echo) {
+                    echo.leave(`ticketsRoom.${user?.department_id}`);
+                }
+            }
+        };
+    }, [echo, user.token]);
+    const handleCallback = async (data: any) => {
+        await addNewTicket(data);
+    }
     return (
         <Layout>
             <Box sx={{ display: 'flex', flexFlow: 'row wrap', justifyContent: 'space-between', alignItems: 'center', gap: 4 }}>

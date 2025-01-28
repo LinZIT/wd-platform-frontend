@@ -35,7 +35,7 @@ export const ChatWindow: FC<Props> = ({ usuario }) => {
     const [isTyping, setIsTyping] = useState<boolean>(false);
     const theme = useTheme();
     useEffect(() => {
-        if (user) {
+        if (user.token) {
             if (echo) {
                 if (open) {
                     echo.private(`chat.${user?.id}`).listen('MessageSent', (event: any) => {
@@ -53,23 +53,31 @@ export const ChatWindow: FC<Props> = ({ usuario }) => {
             }
         }
         return () => {
-            if (echo) {
-                if (open) {
-                    echo.leave(`chat.${user.id}`);
+            if (user.token) {
+                if (echo) {
+                    if (open) {
+                        echo.leave(`chat.${user.id}`);
+                    }
                 }
             }
         };
-    }, [open, usuario])
+    }, [open, echo, user.token])
     const handleOpen = () => {
         setOpen(true);
         setChatWindow(true);
         const exceptThisUser = getUnreadMessages().filter((message) => message.sender.id !== usuario.id)
         setUnreadMessages(exceptThisUser);
-        echo.private(`chat.${user?.id}`).listenForWhisper('typing', () => {
-            if (!isTyping) {
-                setIsTyping(true);
+        if (user.token) {
+            if (echo) {
+
+                echo.private(`chat.${user?.id}`).listenForWhisper('typing', () => {
+                    if (!isTyping) {
+                        setIsTyping(true);
+                    }
+                });
+                echo.leave(`chat.${user?.id}`);
             }
-        });
+        }
     }
     const handleClose = () => {
         const exceptThisUser = unreadMessages.filter((message) => message.sender !== usuario.id);
@@ -178,11 +186,15 @@ export const ChatWindow: FC<Props> = ({ usuario }) => {
                                             onChange={handleChange}
                                             fullWidth
                                             onKeyDownCapture={() => {
-                                                if (echo) {
-                                                    try {
-                                                        echo.private(`chat.${usuario?.id}`).whisper('typing', { user })
-                                                    } catch (error) {
-                                                        echo.private(`chat.${usuario?.id}`).whisper('typing', { user })
+                                                if (user.token) {
+                                                    if (echo) {
+                                                        try {
+                                                            echo.private(`chat.${usuario?.id}`).whisper('typing', { user })
+                                                            echo.leave(`chat.${usuario?.id}`)
+                                                        } catch (error) {
+                                                            echo.private(`chat.${usuario?.id}`).whisper('typing', { user })
+                                                            echo.leave(`chat.${usuario?.id}`)
+                                                        }
                                                     }
                                                 }
 

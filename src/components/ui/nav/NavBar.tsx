@@ -19,30 +19,30 @@ export const NavBar = () => {
     const getMessages = useMessagesStore((state) => state.getMessages);
     const getChatWindow = useUserStore((state) => state.getChatWindow)
     useEffect(() => {
-        if (user) {
-            if (echo) {
-                echo.private(`chat.${user?.id}`).listen('MessageSent', (event: any) => {
-                    if (event.receiver.id === user?.id)
-                        handleEchoCallback(event)
-                })
-                if (user.department?.description === 'IT') {
-                    console.log('intento')
-                    echo.join(`room.${user.department?.id}`)
-                        .here((users: any) => {
-                            console.log('Users in IT room:', users);
-                        })
-                        .joining((user: any) => {
-                            console.log('User joined IT room:', user);
-                        })
-                }
-            }
-        }
-        return () => {
-            if (echo) {
-                echo.leave(`chat.${user.id}`);
-                echo.leave(`room.${user.department?.id}`);
-            }
-        };
+        // if (user) {
+        //     if (echo) {
+        //         echo.private(`chat.${user?.id}`).listen('MessageSent', (event: any) => {
+        //             if (event.receiver.id === user?.id)
+        //                 handleEchoCallback(event)
+        //         })
+        //         if (user.department?.description === 'IT') {
+        //             console.log('intento')
+        //             echo.join(`room.${user.department?.id}`)
+        //                 .here((users: any) => {
+        //                     console.log('Users in IT room:', users);
+        //                 })
+        //                 .joining((user: any) => {
+        //                     console.log('User joined IT room:', user);
+        //                 })
+        //         }
+        //     }
+        // }
+        // return () => {
+        //     if (echo) {
+        //         echo.leave(`chat.${user.id}`);
+        //         echo.leave(`room.${user.department?.id}`);
+        //     }
+        // };
     }, []);
     const sound = new Howl({
         src: ['/message.mp3'],

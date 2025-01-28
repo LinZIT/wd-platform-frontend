@@ -3,6 +3,8 @@ import { IUserTicket } from "./user-type";
 
 export interface IActualization {
     id: number;
+    ticket_id: number;
+    ticket?: ITicket;
     user_id: number;
     user: IUser;
     description: string;
@@ -35,6 +37,7 @@ export interface ITicket {
         created_at: string;
         updated_at: string;
     };
+    new: number;
 }
 export type TicketStatus = 'Abierto' | 'En Proceso' | 'Terminado' | 'Cancelado'
 

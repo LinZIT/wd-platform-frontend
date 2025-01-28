@@ -1,21 +1,17 @@
-import AddRounded from "@mui/icons-material/AddRounded";
 import CloseRounded from "@mui/icons-material/CloseRounded";
 import { Dialog, DialogContent, Box, IconButton, Chip, Divider, DialogActions, Avatar, List, ListItem, ListItemAvatar, ListItemButton, ListItemText, Skeleton } from "@mui/material";
-import Grid from "@mui/material/Grid2";
 import { FormikState, Formik, Form } from "formik";
 import moment from "moment";
 import { FC, useState, useRef, useEffect, Dispatch, SetStateAction } from "react";
-import { ITicket, ITicketCategory } from "../../interfaces/ticket-type";
-import { IActualization } from "../../interfaces/ticket-type";
+import { ITicket, IActualization, ITicketCategory } from '../../interfaces/ticket-type';
 import { getCookieValue } from "../../lib/functions";
 import { useUserStore } from "../../store/user/UserStore";
 import { TypographyCustom, TextFieldCustom, ButtonCustom } from "../custom";
 import { Actualizations } from "./Actualizations";
 import { red, blue, yellow, purple } from "@mui/material/colors";
 import { request } from "../../common/request";
-import { useTicketCategoryStore } from "../../store/ticket_categories/TicketCategoryStore";
-import { toast } from "react-toastify";
-import { PopoverPicker } from "./PopoverPicker";
+import useEcho from "../useEcho";
+import { CategoriesDialog } from "./CategoriesDialog";
 
 const initialValues = {
     actualization: '',
@@ -29,7 +25,6 @@ interface Props {
     setOpen: Dispatch<SetStateAction<boolean>>;
 }
 
-
 export const TicketInformation: FC<Props> = ({ ticket_id, open, setOpen }) => {
 
     const user = useUserStore((state) => state.user);
@@ -38,14 +33,59 @@ export const TicketInformation: FC<Props> = ({ ticket_id, open, setOpen }) => {
     const [actualizations, setActualizations] = useState<IActualization[] | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const ref = useRef();
+    const echo = useEcho();
     useEffect(() => {
         if (open) {
             getTicketInformation();
+            if (user.token) {
+                if (echo) {
+                    echo.join(`ticketsRoom.${user?.department_id}`)
+                        .listen('TicketNewActualization', () => {
+                            handleCallback();
+                        })
+                        .listen('TicketCategoryChange', ({ category }: { category: ITicketCategory }) => {
+                            console.log(category);
+                            handleCallbackCategoryChange(category);
+                        })
+                }
+            }
         } else {
             setTicket(null);
         }
-    }, [open]);
-
+        return () => {
+            if (user.token) {
+                if (echo) {
+                    echo.leave(`ticketsRoom.${user?.department_id}`);
+                }
+            }
+        }
+    }, [open, echo, user.token]);
+    const getTicketActualizations = async () => {
+        const { status, response, err }: { status: number, response: any, err: any } = await request(`/ticket/${ticket_id}/actualizations`, 'GET');
+        switch (status) {
+            case 200:
+                const data = await response.json();
+                console.log({ response })
+                setActualizations(data.data)
+                scrollTo(ref);
+                break;
+            default:
+                break;
+        }
+    }
+    const handleCallback = async () => {
+        getTicketActualizations()
+    }
+    const handleCallbackCategoryChange = (category: ITicketCategory) => {
+        if (ticket) {
+            const newTicket = {
+                ...ticket,
+                ticket_category: category,
+                ticket_category_id: category.id
+            }
+            setTicket(newTicket);
+        }
+    }
     const getTicketInformation = async () => {
         setLoading(true);
         const url = `${import.meta.env.VITE_BACKEND_API_URL}/ticket/${ticket_id}`;
@@ -70,7 +110,6 @@ export const TicketInformation: FC<Props> = ({ ticket_id, open, setOpen }) => {
             console.error(error);
         } finally {
             setLoading(false);
-
         }
     }
     const scrollTo = (ref: any) => {
@@ -86,6 +125,7 @@ export const TicketInformation: FC<Props> = ({ ticket_id, open, setOpen }) => {
     }
 
     const onSubmit = async (values: InitialValues, resetForm: (nextState?: Partial<FormikState<InitialValues>> | undefined) => void) => {
+        if (!values.actualization) return;
         const url = `${import.meta.env.VITE_BACKEND_API_URL}/ticket/${ticket?.id}/actualization`;
 
         const body = new URLSearchParams({
@@ -106,6 +146,7 @@ export const TicketInformation: FC<Props> = ({ ticket_id, open, setOpen }) => {
                 case 200:
                     const { data } = await response.json();
                     setActualizations(data);
+                    scrollTo(ref);
                     resetForm();
                     break;
                 default:
@@ -116,9 +157,6 @@ export const TicketInformation: FC<Props> = ({ ticket_id, open, setOpen }) => {
             console.log({ error })
         }
     }
-
-
-
 
     return (<Dialog fullWidth={true} maxWidth='xl' open={open} PaperProps={{ sx: { borderRadius: 4, }, }} disableScrollLock={false}  >
 
@@ -217,115 +255,3 @@ export const TicketInformation: FC<Props> = ({ ticket_id, open, setOpen }) => {
     </Dialog>)
 }
 
-const CategoriesDialog = ({ ticket, setTicket }: { ticket: ITicket | null, setTicket: Dispatch<SetStateAction<ITicket | null>> }) => {
-    const [openTicketCategory, setOpenTicketCategory] = useState<boolean>(false);
-    const [isAdding, setIsAdding] = useState<boolean>(false);
-    const categories = useTicketCategoryStore((state) => state.categories);
-    const [color, setColor] = useState("#aabbcc");
-    const setCategories = useTicketCategoryStore((state) => state.setCategories)
-
-    const changeCategory = async (category: string) => {
-        const body = new URLSearchParams({ description: category });
-        const { status, response, err }: { status: number, response: any, err: any } = await request(`/ticket/${ticket?.id}/category`, 'PUT', body)
-        switch (status) {
-            case 200:
-                const { data } = await response.json();
-                setTicket(data);
-                setOpenTicketCategory(false);
-                toast.success('Categoría cambiada correctamente');
-                break;
-            default:
-                toast.error('Error al intentar cambiar la categoria')
-                break;
-        }
-    }
-
-    const initialValues = {
-        description: ''
-    }
-
-    const onSubmit = async (values: { description: string; }, resetForm: (nextState?: Partial<FormikState<{ description: string; }>> | undefined) => void) => {
-        const body = new URLSearchParams({ description: String(values.description), color: String(color) });
-        const status = await setCategories(body);
-        switch (status) {
-            case 200:
-                setOpenTicketCategory(false);
-                resetForm();
-                toast.success('Categoría añadida correctamente');
-                break;
-            default:
-                toast.error('No se creo la categoria');
-                break;
-
-        }
-    }
-    return (
-        <>
-            <Chip size="small" onClick={() => setOpenTicketCategory(true)} label={ticket?.ticket_category?.description} sx={{ width: 80, background: ticket?.ticket_category?.color, color: (theme) => theme.palette.getContrastText(ticket?.ticket_category?.color ?? '#C0EA0F') }} />
-            <Dialog open={openTicketCategory} onClose={() => setOpenTicketCategory(false)} maxWidth="sm">
-                <List sx={{ pt: 0 }}>
-                    <Box sx={{ maxHeight: 200, overflowY: 'hidden' }}>
-                        <Box sx={{ maxHeight: 200, overflowY: 'scroll' }}>
-                            {categories && categories.map((category) => (
-                                <ListItem disableGutters key={category.id} dense>
-                                    <ListItemButton
-                                        onClick={() => changeCategory(category.description)}
-                                    >
-                                        <ListItemAvatar>
-                                            <Box sx={{ bgcolor: category.color, borderRadius: '100%', width: 40, height: 40 }} />
-                                        </ListItemAvatar>
-                                        <ListItemText primary={category.description} />
-                                    </ListItemButton>
-                                </ListItem>
-                            ))}
-                            {categories && categories.length === 0 && (
-                                <Box sx={{ height: 100, display: 'flex', flexFlow: 'row wrap', alignItems: 'center', justifyContent: 'center', textAlign: 'center', p: 2 }}>
-                                    <TypographyCustom>No hay categorias disponibles</TypographyCustom>
-                                </Box>
-                            )}
-                        </Box>
-                    </Box>
-                    {isAdding ?
-                        <Formik
-
-                            initialValues={initialValues}
-                            onSubmit={(values, { resetForm }) => onSubmit(values, resetForm)}
-                        >
-                            {({ values, handleSubmit, handleChange }) => (
-                                <Form onSubmit={handleSubmit}>
-                                    <Grid container sx={{ display: "flex", flexFlow: 'column wrap', alignItems: 'center', justifyContent: 'center', p: 1, gap: 1 }}>
-
-                                        <Grid><IconButton onClick={() => setIsAdding(false)}><CloseRounded /></IconButton></Grid>
-                                        <Grid sx={{ display: 'flex', flexFlow: 'row nowrap', gap: 1, alignItems: 'center' }}>
-                                            <PopoverPicker color={color} onChange={setColor} />
-                                            <TextFieldCustom disabled label={'Color'} name={'color'} value={color} />
-                                        </Grid>
-                                        <Grid sx={{ display: 'flex', flexFlow: 'row nowrap', gap: 1, alignItems: 'center' }}>
-                                            <Box sx={{ width: 30, height: 30 }}></Box>
-                                            <TextFieldCustom fullWidth label={'Descripcion'} name={'description'} value={values.description} onChange={handleChange} />
-                                        </Grid>
-                                        <Grid>
-                                            <ButtonCustom variant="contained" type="submit">Guardar</ButtonCustom>
-                                        </Grid>
-                                    </Grid>
-                                </Form>
-                            )}
-                        </Formik>
-                        : (<ListItem disableGutters>
-                            <ListItemButton
-                                autoFocus
-                                onClick={() => setIsAdding(true)}
-                            >
-                                <ListItemAvatar>
-                                    <Avatar>
-                                        <AddRounded />
-                                    </Avatar>
-                                </ListItemAvatar>
-                                <ListItemText primary="Agregar categoria" />
-                            </ListItemButton>
-                        </ListItem>)}
-                </List >
-            </Dialog >
-        </>
-    )
-}
