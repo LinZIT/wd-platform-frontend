@@ -17,6 +17,7 @@ import { useUserStore } from '../store/user/UserStore';
 
 import moment from 'moment';
 import { useTicketCategoryStore } from '../store/ticket_categories/TicketCategoryStore';
+import { useSocketStore } from '../store/sockets/SocketStore';
 const options = [
     { text: 'Tickets', icon: <ConfirmationNumberIcon />, path: '/tickets' },
 ]
@@ -24,10 +25,24 @@ export const Dashboard = () => {
     const user = useUserStore((state) => state.user);
     const validateToken = useUserStore((state) => state.validateToken);
     const getCategories = useTicketCategoryStore((state) => state.getCategories);
+    const socket = useSocketStore((state) => state);
     useEffect(() => {
         validateToken();
-        getCategories();
-    }, [])
+        // getCategories();
+        if (user.id !== 0) {
+            if (socket.echo === null) {
+                socket.setSocket();
+            } else {
+                console.log({ socket })
+                socket.echo.join(`ticketsRoom.${user?.department_id}`)
+            }
+        }
+        return () => {
+            if (socket.echo) {
+                socket.echo.leave(`ticketsRoom.${user?.department_id}`)
+            }
+        }
+    }, [user.id, socket.echo])
     const router = useNavigate();
     const days: any = {
         1: 'Lunes',

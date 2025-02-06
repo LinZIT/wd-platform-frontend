@@ -7,23 +7,30 @@ import { Layout } from "../../components/ui/Layout"
 import { Form, Formik, FormikState } from "formik"
 import { request } from "../../common/request"
 import { toast } from "react-toastify"
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import useEcho from "../../components/useEcho";
 
 interface InitialValues {
     description: string;
     department: string;
+    email: string;
+    names: string;
 }
 
-const initialValues = {
-    description: "",
-    department: "",
-}
 
 export const CreateNewTicket = () => {
 
     const user = useUserStore((state) => state.user);
     const validateToken = useUserStore((state) => state.validateToken);
+    const [initialValues, setInitialValues] = useState<InitialValues>(
+        {
+            description: '',
+            email: '',
+            names: '',
+            department: '',
+        }
+    )
+
     const onSubmit = async (values: InitialValues, resetForm: (nextState?: Partial<FormikState<InitialValues>> | undefined) => void) => {
         const body = new URLSearchParams({ description: String(values.description), user_id: String(user.id) })
         const { status, response, err } = await request('/ticket', 'POST', body)
@@ -45,8 +52,18 @@ export const CreateNewTicket = () => {
         }
     }
     useEffect(() => {
-        validateToken();
-    }, []);
+        if (user.id === 0) {
+            validateToken();
+        } else {
+            setInitialValues({
+                description: '',
+                email: user.email,
+                names: `${user.names} ${user.surnames}`,
+                department: user.department?.description ?? '',
+            })
+        }
+
+    }, [user]);
     return (
         <Layout>
             <Box sx={{ display: 'flex', flexFlow: 'column wrap', justifyContent: 'space-between', alignItems: 'center', gap: 4 }}>
@@ -59,13 +76,13 @@ export const CreateNewTicket = () => {
                         <Form onSubmit={handleSubmit}>
                             <Grid container direction={'column'} gap={4}>
                                 <Grid>
-                                    <TextFieldCustom label="Departamento" disabled value={user.department?.description} />
+                                    <TextFieldCustom label="Departamento" disabled value={initialValues.department} />
                                 </Grid>
                                 <Grid>
-                                    <TextFieldCustom label="Nombre y Apellido" disabled value={`${user.names} ${user.surnames}`} />
+                                    <TextFieldCustom label="Nombre y Apellido" disabled value={initialValues.names} />
                                 </Grid>
                                 <Grid>
-                                    <TextFieldCustom label="Email" disabled value={user.email} />
+                                    <TextFieldCustom label="Email" disabled value={initialValues.email} />
                                 </Grid>
                                 <Grid>
                                     <TextFieldCustom label="Descripcion de problema" value={values.description} onChange={handleChange} name="description" multiline />

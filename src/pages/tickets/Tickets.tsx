@@ -14,6 +14,7 @@ import { OptionsList } from "../../components/ui/options/OptionsList";
 import { KanbanBoard } from "../../components/tickets/KanbanBoard";
 import { ITicket } from "../../interfaces/ticket-type";
 import { useOpenTicketStore } from "../../store/tickets/OpenTicketsStore";
+import { useSocketStore } from "../../store/sockets/SocketStore";
 
 const options = [
     { text: 'Dashboard', icon: <DashboardRounded />, path: '/stats' },
@@ -22,7 +23,8 @@ const options = [
 export const Tickets = () => {
     const validateToken = useUserStore((state) => state.validateToken);
     const user = useUserStore((state) => state.user);
-    const echo = useEcho();
+    // const echo = useEcho();
+    const socket = useSocketStore((state) => state);
     const openTickets = useOpenTicketStore((state) => state);
     const addNewTicket = async (data: ITicket) => {
         openTickets.addNewTicket(data);
@@ -32,8 +34,10 @@ export const Tickets = () => {
             validateToken();
         }
         if (user.token) {
-            if (echo) {
-                echo.join(`ticketsRoom.${user?.department_id}`)
+            if (socket.echo === null) {
+                socket.setSocket();
+            } else {
+                socket.echo.join(`ticketsRoom.${user?.department_id}`)
                     .listen('TicketCreated', async (data: any) => {
                         await handleCallback(data);
                     })
@@ -41,12 +45,12 @@ export const Tickets = () => {
         }
         return () => {
             if (user.token) {
-                if (echo) {
-                    echo.leave(`ticketsRoom.${user?.department_id}`);
+                if (socket.echo) {
+                    socket.echo.leave(`ticketsRoom.${user?.department_id}`);
                 }
             }
         };
-    }, [echo, user.token]);
+    }, [socket.echo, user.token]);
     const handleCallback = async (data: any) => {
         await addNewTicket(data);
     }

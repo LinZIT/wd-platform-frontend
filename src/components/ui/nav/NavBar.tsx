@@ -13,11 +13,11 @@ export const NavBar = () => {
     const theme = useTheme();
     const router = useNavigate();
     const user = useUserStore((state) => state.user);
-    const echo = useEcho();
-    const unreadMessages = useMessagesStore((state) => state.unreadMessages);
-    const setUnreadMessages = useMessagesStore((state) => state.setUnreadMessages);
-    const getMessages = useMessagesStore((state) => state.getMessages);
-    const getChatWindow = useUserStore((state) => state.getChatWindow)
+    // const echo = useEcho();
+    // const unreadMessages = useMessagesStore((state) => state.unreadMessages);
+    // const setUnreadMessages = useMessagesStore((state) => state.setUnreadMessages);
+    // const getMessages = useMessagesStore((state) => state.getMessages);
+    // const getChatWindow = useUserStore((state) => state.getChatWindow)
     useEffect(() => {
         // if (user) {
         //     if (echo) {
@@ -50,13 +50,13 @@ export const NavBar = () => {
     const sound_open = new Howl({
         src: ['/new_message.mp3'],
     })
-    const handleEchoCallback = (e: any) => {
-        getChatWindow() ? sound_open.play() : sound.play();
-        if (getChatWindow()) return;
-        const value = getMessages();
-        const newUnreadMessages = [...value, { message: e.message, sender: e.sender, date: new Date() }]
-        setUnreadMessages(newUnreadMessages);
-    }
+    // const handleEchoCallback = (e: any) => {
+    //     getChatWindow() ? sound_open.play() : sound.play();
+    //     if (getChatWindow()) return;
+    //     const value = getMessages();
+    //     const newUnreadMessages = [...value, { message: e.message, sender: e.sender, date: new Date() }]
+    //     setUnreadMessages(newUnreadMessages);
+    // }
     const height = 35;
     const width = 160;
     return (
@@ -78,11 +78,11 @@ export const NavBar = () => {
                         <Grid size={4} >
                             <Box sx={{ display: 'flex', justifyContent: 'end' }}>
                                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                    <IconButton size="small" onClick={() => setUnreadMessages([])} disableRipple sx={{ cursor: 'pointer', background: theme.palette.mode === 'dark' ? lighten(theme.palette.background.default, 0.1) : theme.palette.background.default }}>
+                                    {/* <IconButton size="small" onClick={() => setUnreadMessages([])} disableRipple sx={{ cursor: 'pointer', background: theme.palette.mode === 'dark' ? lighten(theme.palette.background.default, 0.1) : theme.palette.background.default }}>
                                         <Badge badgeContent={unreadMessages.length} variant="dot" color="error" overlap="circular" >
                                             <NotificationsOutlined sx={{ width: 16, height: 16 }} />
                                         </Badge>
-                                    </IconButton>
+                                    </IconButton> */}
                                 </Box>
                                 <UserMenu />
                             </Box>

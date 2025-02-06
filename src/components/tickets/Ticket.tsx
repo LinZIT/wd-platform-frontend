@@ -16,6 +16,7 @@ import { useFinishedTicketStore } from '../../store/tickets/FinishedTicketsStore
 import { useInProcessTicketStore } from '../../store/tickets/InProcessTicketsStore';
 import useEcho from '../useEcho';
 import { amber, red } from '@mui/material/colors';
+import { useSocketStore } from '../../store/sockets/SocketStore';
 
 interface Props {
     ticket: ITicket;
@@ -25,17 +26,16 @@ export const Ticket: FC<Props> = ({ ticket }) => {
 
     const [open, setOpen] = useState<boolean>(false);
     const user = useUserStore((state) => state.user);
-    const echo = useEcho();
     const [assignments, setAssignments] = useState<Assignment[]>(ticket.assignments);
     const openTicketState = useOpenTicketStore(state => state);
     const cancelledTicketState = useCancelledTicketStore(state => state);
     const inProcessTicketState = useInProcessTicketStore(state => state);
     const finishedTicketState = useFinishedTicketStore(state => state);
-
+    const socket = useSocketStore(state => state);
     useEffect(() => {
         if (user.token) {
-            if (echo) {
-                echo.join(`ticketsRoom.${user?.department_id}`)
+            if (socket.echo) {
+                socket.echo.join(`ticketsRoom.${user?.department_id}`)
                     .listen('TicketAssignUser', ({ ticket_assignments, assigned_user, action, ticket_id }: any) => {
                         if (ticket_id === ticket.id) {
                             handleCallback(ticket_assignments, assigned_user, action)
@@ -47,8 +47,8 @@ export const Ticket: FC<Props> = ({ ticket }) => {
                         }
                     })
                     .listen('TicketPriorityChanged', (event: any) => {
+                        console.log(event)
                         if (event.ticket.id === ticket.id) {
-                            console.log(event)
                             handleCallbackPriority(event.priority)
                         }
                     })
@@ -56,12 +56,12 @@ export const Ticket: FC<Props> = ({ ticket }) => {
         }
         return () => {
             if (user.token) {
-                if (echo) {
-                    echo.leave(`ticketsRoom.${user?.department_id}`);
+                if (socket.echo) {
+                    socket.echo.leave(`ticketsRoom.${user?.department_id}`);
                 }
             }
         };
-    }, [echo, user.token])
+    }, [socket.echo, user.token])
 
     const handleCallback = (ticket_assignments: any, user_id: number, action: string) => {
         if (user_id === user.id && action === 'add') {

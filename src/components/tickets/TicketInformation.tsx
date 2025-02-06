@@ -12,6 +12,7 @@ import { red, blue, yellow, purple } from "@mui/material/colors";
 import { request } from "../../common/request";
 import useEcho from "../useEcho";
 import { CategoriesDialog } from "./CategoriesDialog";
+import { useSocketStore } from "../../store/sockets/SocketStore";
 
 const initialValues = {
     actualization: '',
@@ -33,13 +34,16 @@ export const TicketInformation: FC<Props> = ({ ticket_id, open, setOpen }) => {
     const [actualizations, setActualizations] = useState<IActualization[] | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const ref = useRef();
-    const echo = useEcho();
+    // const echo = useEcho();
+    const socket = useSocketStore(state => state);
     useEffect(() => {
         if (open) {
             getTicketInformation();
-            if (user.token) {
-                if (echo) {
-                    echo.join(`ticketsRoom.${user?.department_id}`)
+            if (user.id !== 0) {
+                if (socket.echo === null) {
+                    socket.setSocket();
+                } else {
+                    socket.echo.join(`ticketsRoom.${user?.department_id}`)
                         .listen('TicketNewActualization', () => {
                             handleCallback();
                         })
@@ -53,13 +57,13 @@ export const TicketInformation: FC<Props> = ({ ticket_id, open, setOpen }) => {
             setTicket(null);
         }
         return () => {
-            if (user.token) {
-                if (echo) {
-                    echo.leave(`ticketsRoom.${user?.department_id}`);
+            if (user.id !== 0) {
+                if (socket.echo) {
+                    socket.echo.leave(`ticketsRoom.${user?.department_id}`);
                 }
             }
         }
-    }, [open, echo, user.token]);
+    }, [open, socket.echo, user.id]);
     const getTicketActualizations = async () => {
         const { status, response, err }: { status: number, response: any, err: any } = await request(`/ticket/${ticket_id}/actualizations`, 'GET');
         switch (status) {
